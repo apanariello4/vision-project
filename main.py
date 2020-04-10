@@ -1,11 +1,10 @@
-import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
+
 import cv2
 import numpy as np
 
 # Create a VideoCapture object and read from input file
 # If the input is the camera, pass 0 instead of the video file name
-cap = cv2.VideoCapture('videos/VIRB0392.MP4')
+cap = cv2.VideoCapture('videos/VIRB0391.MP4')
 
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
@@ -16,7 +15,7 @@ out = cv2.VideoWriter('output.avi',0, fps, (frame_width,frame_height))
 og = True
 
 # Check if camera opened successfully
-if (cap.isOpened()== False): 
+if (cap.isOpened()== False):
     print("Error opening video stream or file")
 
 # Read until video is completed
@@ -36,6 +35,17 @@ while(cap.isOpened()):
         #---------------Saliency---------------------------------------
         # initialize OpenCV's static fine grained saliency detector and
         # compute the saliency map
+
+        img = frame
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray = np.float32(gray)
+        dst = cv2.cornerHarris(gray, 8, 3, 0.04)
+
+        # result is dilated for marking the corners, not important
+        dst = cv2.dilate(dst, None)
+        img[dst > 0.03 * dst.max()] = [0, 0, 255]
+
+
         saliency = cv2.saliency.StaticSaliencyFineGrained_create()
         (success, saliencyMap) = saliency.computeSaliency(frame)
         # if we would like a *binary* map that we could process for contours,
@@ -83,14 +93,14 @@ while(cap.isOpened()):
         M = cv2.getPerspectiveTransform(og_points, current_bb)
         imageWarped = cv2.warpPerspective(frame, M, (frame_width, frame_height))
         #out.write(imageWarped)
-        cv2.imshow('Frame',frame)
+        cv2.imshow('Frame',img)
 
         # Press Q on keyboard to  exit
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
 
     # Break the loop
-    else: 
+    else:
         break
 
 # When everything done, release the video capture and writer objects
