@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 # If the input is the camera, pass 0 instead of the video file name
 
 
-videoslist = glob.glob('videos/*.mp4')
+videolist = glob.glob('videos/*.mp4')
 
-for video in videoslist:
+for video in videolist:
     cap = cv2.VideoCapture(video)
     print("STIAMO APRENDO IL VIDEO : ",video)
     frame_width = int(cap.get(3))
