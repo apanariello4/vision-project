@@ -27,9 +27,9 @@ for video in videolist:
     good_global = 0
     name_painting = None
     # Read until video is completed
-    found = False
+    finish = False
 
-    while(cap.isOpened() and found==False):
+    while(cap.isOpened() and finish == False):
         # Capture frame-by-frame
         ret, frame = cap.read()
         prev_img = None
@@ -81,17 +81,17 @@ for video in videolist:
 
 
             #picture matched
-            if(name_painting):
+            if name_painting:
                 print("ecco la corrispondenza")
                 img2 = cv2.imread(name_painting, cv2.IMREAD_GRAYSCALE)
+                finish = True
+
                 cv2.imshow('Frame', img2)
-                found = True
-                # Press Q on keyboard to  exit
                 if cv2.waitKey(100) & 0xFF == ord('q'):
                     break
             else:
                 print("nessuna corrispondenza")
-                found=True
+                finish = True
         # Break the loop
         else:
             break
