@@ -28,7 +28,7 @@ for video in videolist:
     name_painting = None
 
     time = 0
-    time_max = 1000  # max seconds of video (10msec)
+    time_max = 1000  # max seconds of video (10 msec)
     time_iterate = 200
 
     # Read until video is completed
