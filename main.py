@@ -1,6 +1,7 @@
-
+import glob
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Create a VideoCapture object and read from input file
 # If the input is the camera, pass 0 instead of the video file name
@@ -26,74 +27,35 @@ while(cap.isOpened()):
 
     if ret == True:
 
-        #edges = cv2.Canny(frame,50,100)
-        #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 60, np.array([]), 50, 5)
-        # for line in lines:
-            #     for x1, y1, x2, y2 in line:
-            #         cv2.line(frame, (x1, y1), (x2, y2), (20, 220, 20), 3)
 
-        #---------------Saliency---------------------------------------
-        # initialize OpenCV's static fine grained saliency detector and
-        # compute the saliency map
-
-        img = frame
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        gray = np.float32(gray)
-        dst = cv2.cornerHarris(gray, 8, 3, 0.04)
-
-        # result is dilated for marking the corners, not important
-        dst = cv2.dilate(dst, None)
-        img[dst > 0.03 * dst.max()] = [0, 0, 255]
+        img1 = frame
+        #img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        img1 = cv2.resize(img1, (960, 540))
+        img2 = cv2.imread("foto1.png", cv2.IMREAD_GRAYSCALE)
 
 
-        saliency = cv2.saliency.StaticSaliencyFineGrained_create()
-        (success, saliencyMap) = saliency.computeSaliency(frame)
-        # if we would like a *binary* map that we could process for contours,
-        # compute convex hull's, extract bounding boxes, etc., we can
-        # additionally threshold the saliency map
+        sift = cv2.xfeatures2d.SIFT_create(contrastThreshold=0.01, edgeThreshold=20)
 
-        threshMap = cv2.threshold(saliencyMap.astype("uint8"), 0, 255, cv2.THRESH_BINARY)[1]
-        #----------------------------------------------------------------
+        kp1, dest1 = sift.detectAndCompute(img1, None)
+        kp2, dest2 = sift.detectAndCompute(img2, None)
 
-        grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        _,thresh = cv2.threshold(grayscale[:,:,2],10,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+        # BFMatcher with default params
+        bf = cv2.BFMatcher()
+        matches = bf.knnMatch(dest1, dest2, k=2)
 
-        #kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25,25))
-        #opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=3)
+        # Apply ratio test
+        good = []
+        for m, n in matches:
+            if m.distance < 0.3 * n.distance:
+                good.append([m])
 
-        contours, hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        # cv.drawMatchesKnn expects list of lists as matches.
+        img3 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
-        if len(contours) != 0:
-            # draw in blue the contours that were founded
-            cv2.drawContours(frame, contours, -1, 255, 3)
 
-            # find the biggest countour (c) by the area
-            c = max(contours, key = cv2.contourArea)
 
-            # approximate the contour (approx) with 10% tolerance
-            epsilon = 0.1*cv2.arcLength(c,True)
-            approx = cv2.approxPolyDP(c,epsilon,True)
-            x,y,w,h = cv2.boundingRect(approx)
-
-            # draw the biggest contour (c) in green
-            cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
-
-            # draw the minimum rectangle around the biggest contour (c) by modifying rotation
-            rect = cv2.minAreaRect(approx)
-            box = cv2.boxPoints(rect)
-            box = np.int0(box)
-            cv2.drawContours(frame,[box],0,(0,0,255),2)
-
-            if og:
-                og_points = np.float32([[x, y],[x+w, y+h],[x, y+h],[x+w, y]])
-                og = False
-
-        current_bb = np.float32([[x, y],[x+w, y+h],[x, y+h],[x+w, y]])
-
-        M = cv2.getPerspectiveTransform(og_points, current_bb)
-        imageWarped = cv2.warpPerspective(frame, M, (frame_width, frame_height))
-        #out.write(imageWarped)
-        cv2.imshow('Frame',img)
+        #        plt.imshow(frame)
+        cv2.imshow('Frame',img3)
 
         # Press Q on keyboard to  exit
         if cv2.waitKey(25) & 0xFF == ord('q'):
