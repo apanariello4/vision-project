@@ -16,7 +16,7 @@ for video in videolist:
     frame_height = int(cap.get(4))
 
     codec = cv2.VideoWriter_fourcc(*"DIVX")
-    fps = 2
+    fps = 30
     out = cv2.VideoWriter('output.avi',0, fps, (frame_width,frame_height))
     og = True
 
@@ -26,11 +26,18 @@ for video in videolist:
 
     good_global = 0
     name_painting = None
+
+    time = 0
+    time_max = 1000  # max seconds of video (10msec)
+    time_iterate = 200
+
     # Read until video is completed
     finish = False
 
     while(cap.isOpened() and finish == False):
-        # Capture frame-by-frame
+
+        #current position of the video in 10msec (Non in millisecondi maledetta reference)
+        cap.set(1,time)
         ret, frame = cap.read()
         prev_img = None
 
@@ -71,14 +78,14 @@ for video in videolist:
                     img3 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
 
-
-                    #        plt.imshow(frame)
                     cv2.imshow('Frame',img3)
 
                     # Press Q on keyboard to  exit
                     if cv2.waitKey(25) & 0xFF == ord('q'):
                         break
 
+            # update and control time
+            time += time_iterate
 
             #picture matched
             if name_painting:
@@ -90,8 +97,9 @@ for video in videolist:
                 if cv2.waitKey(100) & 0xFF == ord('q'):
                     break
             else:
-                print("nessuna corrispondenza")
-                finish = True
+                if time >= time_max:
+                    print("nessuna corrispondenza")
+                    finish = True
         # Break the loop
         else:
             break
