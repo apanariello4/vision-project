@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import glob
+import os
 
 
 def convertScale(img, alpha, beta):
@@ -119,10 +120,21 @@ def check_match(img):
 
 
 def show_match(img):
-    print("Corrispondenza: " + str(name_painting))
+    print("Corrispondenza trovata")
     cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
     cv2.imshow("Match", img)
     cv2.resizeWindow("Match", int(img.shape[1] / 2), int(img.shape[0] / 2))
+
+
+def load_images_from_folder_to_greyscale():
+
+    images = [
+        cv2.imread(file, cv2.IMREAD_GRAYSCALE) for file in glob.glob("images/*.png")
+    ]
+
+    keypoints = [brisk.detectAndCompute(image, None) for image in images]
+
+    return images, keypoints
 
 
 brisk = cv2.ORB_create()
@@ -131,7 +143,7 @@ good_global = 0
 name_painting = None
 i = 1
 
-filelist = glob.glob("images/*.png")
+images_list, paintings_kp_from_db = load_images_from_folder_to_greyscale()
 
 while cap.isOpened():
     good_global = 0
@@ -150,28 +162,30 @@ while cap.isOpened():
 
         kp1, dest1 = brisk.detectAndCompute(img1, None)
 
-        for fname in filelist:
-
-            img2 = cv2.imread(fname)
-
-            img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-            kp2, dest2 = brisk.detectAndCompute(img2, None)
+        for i in range(0, len(images_list)):
+            # kp2, dest2 = brisk.detectAndCompute(image_database, None)
 
             bf = cv2.BFMatcher(cv2.NORM_HAMMING)
 
-            matches = bf.knnMatch(dest1, dest2, k=2)
+            matches = bf.knnMatch(dest1, paintings_kp_from_db[i][1], k=2)
 
-            # Sort them in the order of their distance.
-            # matches = sorted(matches, key=lambda x: x.distance)
             good = get_good_matches(matches)
 
-            # # Draw first 10 matches.
-            img3 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=2)
+            # Draw first 10 matches.
+            img3 = cv2.drawMatchesKnn(
+                img1,
+                kp1,
+                images_list[i],
+                paintings_kp_from_db[i][0],
+                good,
+                None,
+                flags=2,
+            )
 
             dim_attuale = np.asarray(good).shape[0]
             if int(dim_attuale) > int(good_global):
                 good_global = dim_attuale
-                name_painting = str(fname)
+                name_painting = str(images_list[i])
                 match_img = img3
 
             check_match(img3)
