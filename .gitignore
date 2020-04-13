@@ -1,4 +1,6 @@
 venv
 videos
+images
+.vscode
 output.avi
 output.mp4

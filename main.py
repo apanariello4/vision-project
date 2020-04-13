@@ -1,103 +1,188 @@
-import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
-import cv2
 import numpy as np
+import cv2
+import glob
 
-# Create a VideoCapture object and read from input file
-# If the input is the camera, pass 0 instead of the video file name
-cap = cv2.VideoCapture('videos/VIRB0392.MP4')
 
-frame_width = int(cap.get(3))
-frame_height = int(cap.get(4))
+def convertScale(img, alpha, beta):
+    """Add bias and gain to an image with saturation arithmetics. Unlike
+    cv2.convertScaleAbs, it does not take an absolute value, which would lead to
+    nonsensical results (e.g., a pixel at 44 with alpha = 3 and beta = -210
+    becomes 78 with OpenCV, when in fact it should become 0).
+    """
 
-codec = cv2.VideoWriter_fourcc(*"DIVX")
-fps = 30
-out = cv2.VideoWriter('output.avi',0, fps, (frame_width,frame_height))
-og = True
+    new_img = img * alpha + beta
+    new_img[new_img < 0] = 0
+    new_img[new_img > 255] = 255
+    return new_img.astype(np.uint8)
 
-# Check if camera opened successfully
-if (cap.isOpened()== False): 
-    print("Error opening video stream or file")
 
-# Read until video is completed
-while(cap.isOpened()):
-    # Capture frame-by-frame
+def automatic_brightness_and_contrast(image, clip_hist_percent=25):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Calculate grayscale histogram
+    hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
+    hist_size = len(hist)
+
+    # Calculate cumulative distribution from the histogram
+    accumulator = []
+    accumulator.append(float(hist[0]))
+    for index in range(1, hist_size):
+        accumulator.append(accumulator[index - 1] + float(hist[index]))
+
+    # Locate points to clip
+    maximum = accumulator[-1]
+    clip_hist_percent *= maximum / 100.0
+    clip_hist_percent /= 2.0
+
+    # Locate left cut
+    minimum_gray = 0
+    while accumulator[minimum_gray] < clip_hist_percent:
+        minimum_gray += 1
+
+    # Locate right cut
+    maximum_gray = hist_size - 1
+    while accumulator[maximum_gray] >= (maximum - clip_hist_percent):
+        maximum_gray -= 1
+
+    # Calculate alpha and beta values
+    alpha = 255 / (maximum_gray - minimum_gray)
+    beta = -minimum_gray * alpha
+
+    """
+    # Calculate new histogram with desired range and show histogram 
+    new_hist = cv2.calcHist([gray],[0],None,[256],[minimum_gray,maximum_gray])
+    plt.plot(hist)
+    plt.plot(new_hist)
+    plt.xlim([0,256])
+    plt.show()
+    """
+
+    auto_result = convertScale(image, alpha=alpha, beta=beta)
+    return (auto_result, alpha, beta)
+
+
+def contours_detection(f):
+    # saliency = cv2.saliency.StaticSaliencyFineGrained_create()
+    # (success, saliencyMap) = saliency.computeSaliency(frame)
+
+    ########################
+    # if we would like a *binary* map that we could process for contours,
+    # compute convex hull's, extract bounding boxes, etc., we can
+    # additionally threshold the saliency map
+    ###############################
+
+    # threshMap = cv2.threshold(saliencyMap.astype("uint8"), 0, 255, cv2.THRESH_BINARY)[1]
+
+    grayscale = cv2.cvtColor(f, cv2.COLOR_BGR2HSV)
+    _, thresh = cv2.threshold(
+        grayscale[:, :, 2], 10, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
+    )
+    t_contours, h = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    return t_contours, h
+
+
+def get_painting_frame_max_area(cntrs, f):
+    # find the biggest countour (c) by the area
+    c = max(cntrs, key=cv2.contourArea)
+
+    rc = cv2.minAreaRect(c)
+    box = cv2.boxPoints(rc)
+    for p in box:
+        pt = (p[0], p[1])
+        # print(pt)
+        # cv2.circle(frame, pt, 5, (200, 0, 0), 2)
+
+    # approximate the contour (approx) with 10% tolerance
+    epsilon = 0.1 * cv2.arcLength(c, True)
+    approx = cv2.approxPolyDP(c, epsilon, True)
+    x, y, w, h = cv2.boundingRect(approx)
+
+    # draw the biggest contour (c) in green
+    # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    t_img = f[y : y + h, x : x + w]
+    return t_img
+
+
+def get_good_matches(matches):
+    good = []
+    for m, n in matches:
+        if m.distance < 0.6 * n.distance:
+            good.append([m])
+    return good
+
+
+def check_match(img):
+    cv2.namedWindow("Checking...", cv2.WINDOW_KEEPRATIO)
+    cv2.imshow("Checking...", img)
+    cv2.resizeWindow("Checking...", int(img3.shape[1] / 2), int(img3.shape[0] / 2))
+
+
+def show_match(img):
+    print("Corrispondenza: " + str(name_painting))
+    cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
+    cv2.imshow("Match", img)
+    cv2.resizeWindow("Match", int(img.shape[1] / 2), int(img.shape[0] / 2))
+
+
+brisk = cv2.ORB_create()
+cap = cv2.VideoCapture("videos/VIRB0392.mp4")
+good_global = 0
+name_painting = None
+i = 1
+
+filelist = glob.glob("images/*.png")
+
+while cap.isOpened():
+    good_global = 0
+    name_painting = None
+    found = False
+    print("\n############ FRAME N°" + str(i))
+    i += 1
     ret, frame = cap.read()
-    prev_img = None
 
-    if ret == True:
+    contours, _ = contours_detection(frame)
 
-        #edges = cv2.Canny(frame,50,100)
-        #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 60, np.array([]), 50, 5)
-        # for line in lines:
-            #     for x1, y1, x2, y2 in line:
-            #         cv2.line(frame, (x1, y1), (x2, y2), (20, 220, 20), 3)
+    if len(contours) != 0:
 
-        #---------------Saliency---------------------------------------
-        # initialize OpenCV's static fine grained saliency detector and
-        # compute the saliency map
-        saliency = cv2.saliency.StaticSaliencyFineGrained_create()
-        (success, saliencyMap) = saliency.computeSaliency(frame)
-        # if we would like a *binary* map that we could process for contours,
-        # compute convex hull's, extract bounding boxes, etc., we can
-        # additionally threshold the saliency map
+        img1 = get_painting_frame_max_area(contours, frame)
+        img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 
-        threshMap = cv2.threshold(saliencyMap.astype("uint8"), 0, 255, cv2.THRESH_BINARY)[1]
-        #----------------------------------------------------------------
+        kp1, dest1 = brisk.detectAndCompute(img1, None)
 
-        grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) 
-        _,thresh = cv2.threshold(grayscale[:,:,2],10,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+        for fname in filelist:
 
-        #kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25,25))
-        #opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=3)
+            img2 = cv2.imread(fname)
 
-        contours, hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+            kp2, dest2 = brisk.detectAndCompute(img2, None)
 
-        if len(contours) != 0:
-            # draw in blue the contours that were founded
-            cv2.drawContours(frame, contours, -1, 255, 3)
+            bf = cv2.BFMatcher(cv2.NORM_HAMMING)
 
-            # find the biggest countour (c) by the area
-            c = max(contours, key = cv2.contourArea)
+            matches = bf.knnMatch(dest1, dest2, k=2)
 
-            # approximate the contour (approx) with 10% tolerance
-            epsilon = 0.1*cv2.arcLength(c,True)
-            approx = cv2.approxPolyDP(c,epsilon,True)
-            x,y,w,h = cv2.boundingRect(approx)
-            
-            # draw the biggest contour (c) in green
-            cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
+            # Sort them in the order of their distance.
+            # matches = sorted(matches, key=lambda x: x.distance)
+            good = get_good_matches(matches)
 
-            # draw the minimum rectangle around the biggest contour (c) by modifying rotation
-            rect = cv2.minAreaRect(approx)
-            box = cv2.boxPoints(rect)
-            box = np.int0(box)
-            cv2.drawContours(frame,[box],0,(0,0,255),2)
+            # # Draw first 10 matches.
+            img3 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=2)
 
-            if og:
-                og_points = np.float32([[x, y],[x+w, y+h],[x, y+h],[x+w, y]])
-                og = False
-        
-        current_bb = np.float32([[x, y],[x+w, y+h],[x, y+h],[x+w, y]])
+            dim_attuale = np.asarray(good).shape[0]
+            if int(dim_attuale) > int(good_global):
+                good_global = dim_attuale
+                name_painting = str(fname)
+                match_img = img3
 
-        M = cv2.getPerspectiveTransform(og_points, current_bb)
-        imageWarped = cv2.warpPerspective(frame, M, (frame_width, frame_height))
-        #out.write(imageWarped)
-        cv2.imshow('Frame',frame)
-        cv2.imshow('Warped',imageWarped)
+            check_match(img3)
+            if cv2.waitKey(10) & 0xFF == ord("q"):
+                break
 
-        # Press Q on keyboard to  exit
-        if cv2.waitKey(25) & 0xFF == ord('q'):
-            break
-
-    # Break the loop
-    else: 
-        break
-
-# When everything done, release the video capture and writer objects
-cap.release()
-out.release()
-
-# Closes all the frames
-cv2.destroyAllWindows()
-
+        if name_painting:
+            show_match(match_img)
+            cv2.waitKey(0)
+            # Press Q on keyboard to  exit
+            if cv2.waitKey(20) & 0xFF == ord("q"):
+                break
+        else:
+            print("Nessuna corrispondenza")
