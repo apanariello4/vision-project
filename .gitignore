@@ -4,3 +4,4 @@ images
 /.vscode/
 output.avi
 output.mp4
+__pycache__
