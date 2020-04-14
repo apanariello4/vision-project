@@ -143,67 +143,68 @@ def print_ranked_list(dictionary):
     print(images_ranked_list)
 
 
-brisk = cv2.ORB_create()
-cap = cv2.VideoCapture("videos/VIRB0399.mp4")
-good_global = 0
-name_painting = None
-i = 1
-images_ranked_list = {}
-(images_list, paintings_kp_from_db) = load_images_from_folder_to_greyscale()
-
-while cap.isOpened():
+def prova():
+    brisk = cv2.ORB_create()
+    cap = cv2.VideoCapture("videos/VIRB0399.mp4")
     good_global = 0
     name_painting = None
-    found = False
-    print("\n############ FRAME N°" + str(i))
-    i += 1
-    ret, frame = cap.read()
+    i = 1
     images_ranked_list = {}
-    contours, _ = contours_detection(frame)
+    (images_list, paintings_kp_from_db) = load_images_from_folder_to_greyscale()
 
-    if len(contours) != 0:
+    while cap.isOpened():
+        good_global = 0
+        name_painting = None
+        found = False
+        print("\n############ FRAME N°" + str(i))
+        i += 1
+        ret, frame = cap.read()
+        images_ranked_list = {}
+        contours, _ = contours_detection(frame)
 
-        img1 = get_painting_frame_max_area(contours, frame)
-        img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        if len(contours) != 0:
 
-        kp1, dest1 = brisk.detectAndCompute(img1, None)
+            img1 = get_painting_frame_max_area(contours, frame)
+            img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 
-        for file in glob.glob("images/*.png"):
+            kp1, dest1 = brisk.detectAndCompute(img1, None)
 
-            bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+            for file in glob.glob("images/*.png"):
 
-            matches = bf.knnMatch(dest1, paintings_kp_from_db[file][1], k=2)
+                bf = cv2.BFMatcher(cv2.NORM_HAMMING)
 
-            good = get_good_matches(matches)
+                matches = bf.knnMatch(dest1, paintings_kp_from_db[file][1], k=2)
 
-            img3 = cv2.drawMatchesKnn(
-                img1,
-                kp1,
-                images_list[file],
-                paintings_kp_from_db[file][0],
-                good,
-                None,
-                flags=2,
-            )
-            dim_attuale = np.asarray(good).shape[0]
-            images_ranked_list[file] = dim_attuale
+                good = get_good_matches(matches)
 
-            if int(dim_attuale) > int(good_global):
-                good_global = dim_attuale
-                name_painting = str(images_list[file])
-                match_img = img3
+                img3 = cv2.drawMatchesKnn(
+                    img1,
+                    kp1,
+                    images_list[file],
+                    paintings_kp_from_db[file][0],
+                    good,
+                    None,
+                    flags=2,
+                )
+                dim_attuale = np.asarray(good).shape[0]
+                images_ranked_list[file] = dim_attuale
 
-            check_match(img3)
-            if cv2.waitKey(10) & 0xFF == ord("q"):
-                break
+                if int(dim_attuale) > int(good_global):
+                    good_global = dim_attuale
+                    name_painting = str(images_list[file])
+                    match_img = img3
 
-        if name_painting:
-            show_match(match_img)
-            # cv2.waitKey(0)
-            # Press Q on keyboard to  exit
-            # if cv2.waitKey(20) & 0xFF == ord("q"):
-            #    break
-        else:
-            print("Nessuna corrispondenza")
+                check_match(img3)
+                if cv2.waitKey(10) & 0xFF == ord("q"):
+                    break
 
-        print_ranked_list(images_ranked_list)
+            if name_painting:
+                show_match(match_img)
+                # cv2.waitKey(0)
+                # Press Q on keyboard to  exit
+                # if cv2.waitKey(20) & 0xFF == ord("q"):
+                #    break
+            else:
+                print("Nessuna corrispondenza")
+
+            print_ranked_list(images_ranked_list)
