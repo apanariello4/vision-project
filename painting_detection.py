@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # If the input is the camera, pass 0 instead of the video file name
 
 
-videolist = glob.glob('videos/*.mp4')
+videolist = glob.glob('videos/V*.mp4')
 
 for video in videolist:
     cap = cv2.VideoCapture(video)
@@ -57,6 +57,16 @@ for video in videolist:
                     img2 = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
 
 
+                    gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+                    edges = cv2.Canny(gray, 120, 200)
+                    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, np.array([]), 50, 5)
+
+                    for line in lines:
+                        for x1, y1, x2, y2 in line:
+                            cv2.line(img1, (x1, y1), (x2, y2), (20, 220, 20), 2)
+                    plt.imshow(img1)
+                    plt.show()
+
                     orb = cv2.xfeatures2d.SIFT_create(contrastThreshold=0.0001, edgeThreshold=3)
 
                     kp1, dest1 = orb.detectAndCompute(img1, None)
@@ -102,8 +112,21 @@ for video in videolist:
                 print("ecco la corrispondenza")
                 img2 = cv2.imread(name_painting, cv2.IMREAD_GRAYSCALE)
                 finish = True
+#HOMOGRAPHY
+
+
+                M, _ = cv2.findHomography(np.float32(pt1), np.float32(pt2))
+                imageWarped = cv2.warpPerspective(frame, M, (frame_width,frame_height))
+                #cv2.imwrite("prova.jpg", imageWarped)
+
+
+                plt.imshow(imageWarped)
+                plt.show()
 
                 cv2.imshow('Frame', img2)
+                while(finish==False):
+                    print("ciao")
+
 
                 if cv2.waitKey(100) & 0xFF == ord('q'):
                     break
