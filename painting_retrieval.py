@@ -61,50 +61,6 @@ def automatic_brightness_and_contrast(image, clip_hist_percent=25):
     auto_result = convertScale(image, alpha=alpha, beta=beta)
     return (auto_result, alpha, beta)
 
-
-def contours_detection(f):
-    # saliency = cv2.saliency.StaticSaliencyFineGrained_create()
-    # (success, saliencyMap) = saliency.computeSaliency(frame)
-
-    ########################
-    # if we would like a *binary* map that we could process for contours,
-    # compute convex hull's, extract bounding boxes, etc., we can
-    # additionally threshold the saliency map
-    ###############################
-
-    # threshMap = cv2.threshold(saliencyMap.astype("uint8"), 0, 255, cv2.THRESH_BINARY)[1]
-
-    grayscale = cv2.cvtColor(f, cv2.COLOR_BGR2HSV)
-    _, thresh = cv2.threshold(
-        grayscale[:, :, 2], 10, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
-    )
-    t_contours, h = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    return t_contours, h
-
-
-def get_painting_frame_max_area(cntrs, f):
-    # find the biggest countour (c) by the area
-    c = max(cntrs, key=cv2.contourArea)
-
-    rc = cv2.minAreaRect(c)
-    box = cv2.boxPoints(rc)
-    for p in box:
-        pt = (p[0], p[1])
-        # print(pt)
-        # cv2.circle(frame, pt, 5, (200, 0, 0), 2)
-
-    # approximate the contour (approx) with 10% tolerance
-    epsilon = 0.1 * cv2.arcLength(c, True)
-    approx = cv2.approxPolyDP(c, epsilon, True)
-    x, y, w, h = cv2.boundingRect(approx)
-
-    # draw the biggest contour (c) in green
-    # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-    t_img = f[y : y + h, x : x + w]
-    return t_img
-
-
 def get_good_matches(matches):
     good = []
     for m, n in matches:
@@ -116,7 +72,7 @@ def get_good_matches(matches):
 def check_match(img):
     cv2.namedWindow("Checking...", cv2.WINDOW_KEEPRATIO)
     cv2.imshow("Checking...", img)
-    cv2.resizeWindow("Checking...", int(img3.shape[1] / 2), int(img3.shape[0] / 2))
+    cv2.resizeWindow("Checking...", int(img.shape[1] / 2), int(img.shape[0] / 2))
 
 
 def show_match(img):
