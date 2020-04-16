@@ -1,11 +1,11 @@
 import sys
 #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
-import cv2
+from cv2 import cv2
 import numpy as np
 
 
 
-def Contours(img, adaptive=True):
+def contours(img, adaptive=True):
 
     blur = cv2.medianBlur(img, 5)
     grayscale = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
@@ -22,7 +22,8 @@ def Contours(img, adaptive=True):
 
     return cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-def Hough_Contours(img):
+
+def hough_contours(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray,50,150)
     lines = cv2.HoughLinesP(edges, 1, np.pi/180, 100, np.array([]), 50, 5)
@@ -33,7 +34,7 @@ def Hough_Contours(img):
     return img
 
 
-def Draw_Contours(img, contours, approximate=False):
+def draw_contours(img, contours, approximate=False):
     # draw in blue the contours that were founded
     cv2.drawContours(img, contours, -1, 255, 3)
 
@@ -51,7 +52,8 @@ def Draw_Contours(img, contours, approximate=False):
     # draw the biggest contour (c) in green
     cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-def Detect_Corners(img):
+
+def detect_corners(img):
 
     blur = cv2.medianBlur(img, 5)
     gray = cv2.cvtColor(blur,cv2.COLOR_BGR2GRAY)
@@ -64,3 +66,18 @@ def Detect_Corners(img):
     # Threshold for an optimal value, it may vary depending on the image.
     img[dst>0.01*dst.max()]=[0,0,255]
 
+
+def auto_canny(image, sigma=0.33):
+    """
+    finds the optimal threshold parameters
+    using the median of the image
+    """
+    # compute the median of the single channel pixel intensities
+    v = np.median(image)
+
+    # apply automatic Canny edge detection using the computed median
+    lower = int(max(0, (1.0 - sigma) * v))
+    upper = int(min(255, (1.0 + sigma) * v))
+    edged = cv2.Canny(image, lower, upper)
+    # return the edged image
+    return edged

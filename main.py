@@ -1,15 +1,13 @@
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
-import cv2
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
+from cv2 import cv2
 import numpy as np
 import painting_detection, painting_retrieval
 
 
-
-
 # Create a VideoCapture object and read from input file
 # If the input is the camera, pass 0 instead of the video file name
-cap = cv2.VideoCapture("videos/VIRB0391.MP4")
+cap = cv2.VideoCapture("videos/VIRB0392.MP4")
 
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
@@ -31,11 +29,11 @@ while cap.isOpened():
 
     if ret == True:
 
-        hough_contours = painting_detection.Hough_Contours(frame.copy())
-        contours, hierarchy = painting_detection.Contours(frame.copy(), adaptive=False)
+        hough_contours = painting_detection.hough_contours(frame.copy())
+        contours, hierarchy = painting_detection.contours(frame.copy(), adaptive=False)
 
         if len(contours) != 0:
-            painting_detection.Draw_Contours(frame, contours, approximate=False)
+            painting_detection.draw_contours(frame, contours, approximate=False)
 
        
         cv2.imshow("Frame", frame)
