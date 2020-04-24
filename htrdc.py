@@ -41,14 +41,13 @@ def HTRDC(edges, range_k, n, epsilon):
     center = np.array((center_x, center_y))
     points_d = get_points(h, w)
 
-
     rd = []
     while (k_max - k_min) > epsilon:
         step = (k_max - k_min) / n
-        k_range = np.arange(start=k_min + step, stop= k_max, step=step)
+        k_range = np.arange(start=k_min + step, stop=k_max, step=step)
         for k in k_range:
-            poitns_u = points_d + (points_d - center) * (k * np.sum(points_d)**2)
-            ru = np.sqrt(np.sum(np.square(poitns_u), axis=1))
+            points_u = points_d + (points_d - center) * (k * np.sum(points_d) ** 2)
+            ru = np.sqrt(np.sum(np.square(points_u), axis=1))
             rd.append(compute_rd(ru, k))
         rd = np.array(rd)
 
@@ -60,13 +59,13 @@ def compute_rd(ru, k):
     :param k: distortion coefficient
     :return: rd
     """
-    rd_1 = np.cbrt(ru / 2*k + np.sqrt((1 / 3*k)**3 + (ru / 2*k)**2))
-    rd_2 = np.cbrt(ru / 2*k - np.sqrt((1 / 3*k)**3 + (ru / 2*k)**2))
+    rd_1 = np.cbrt(ru / 2 * k + np.sqrt((1 / 3 * k) ** 3 + (ru / 2 * k) ** 2))
+    rd_2 = np.cbrt(ru / 2 * k - np.sqrt((1 / 3 * k) ** 3 + (ru / 2 * k) ** 2))
 
     return rd_1 + rd_2
 
 
-def get_center(h, w)
+def get_center(h, w):
     """
     get the center of the image
 
@@ -90,7 +89,7 @@ def get_points(h, w):
     :return: coordinates of all image points
     """
 
-    x, y = np.mgrid[0:h,0:w]
+    x, y = np.mgrid[0:h, 0:w]
     points = np.vstack((x.ravel(), y.ravel())).T
 
     return points

@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import glob
 import os
+import painting_detection
 
 
 def convertScale(img, alpha, beta):
@@ -61,6 +62,7 @@ def automatic_brightness_and_contrast(image, clip_hist_percent=25):
     auto_result = convertScale(image, alpha=alpha, beta=beta)
     return (auto_result, alpha, beta)
 
+
 def get_good_matches(matches):
     good = []
     for m, n in matches:
@@ -116,11 +118,11 @@ def prova():
         i += 1
         ret, frame = cap.read()
         images_ranked_list = {}
-        contours, _ = contours_detection(frame)
+        contours, _ = painting_detection.Contours(frame)
 
         if len(contours) != 0:
-
-            img1 = get_painting_frame_max_area(contours, frame)
+            img1 = frame
+            painting_detection.Draw_Contours(img1, contours)
             img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
 
             kp1, dest1 = brisk.detectAndCompute(img1, None)
