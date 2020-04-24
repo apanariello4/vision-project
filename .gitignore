@@ -7,3 +7,5 @@ output.mp4
 __pycache__
 test.py
 old_main.py
+keypoints_db.txt
+descriptors_db.txt
