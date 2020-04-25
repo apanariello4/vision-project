@@ -7,81 +7,13 @@ import painting_detection
 import pickle
 
 
-def convertScale(img, alpha, beta):
-    """Add bias and gain to an image with saturation arithmetics. Unlike
-    cv2.convertScaleAbs, it does not take an absolute value, which would lead to
-    nonsensical results (e.g., a pixel at 44 with alpha = 3 and beta = -210
-    becomes 78 with OpenCV, when in fact it should become 0).
+def get_painting_from_roi(cntrs, img):
     """
-
-    new_img = img * alpha + beta
-    new_img[new_img < 0] = 0
-    new_img[new_img > 255] = 255
-    return new_img.astype(np.uint8)
-
-
-def automatic_brightness_and_contrast(image, clip_hist_percent=25):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Calculate grayscale histogram
-    hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
-    hist_size = len(hist)
-
-    # Calculate cumulative distribution from the histogram
-    accumulator = []
-    accumulator.append(float(hist[0]))
-    for index in range(1, hist_size):
-        accumulator.append(accumulator[index - 1] + float(hist[index]))
-
-    # Locate points to clip
-    maximum = accumulator[-1]
-    clip_hist_percent *= maximum / 100.0
-    clip_hist_percent /= 2.0
-
-    # Locate left cut
-    minimum_gray = 0
-    while accumulator[minimum_gray] < clip_hist_percent:
-        minimum_gray += 1
-
-    # Locate right cut
-    maximum_gray = hist_size - 1
-    while accumulator[maximum_gray] >= (maximum - clip_hist_percent):
-        maximum_gray -= 1
-
-    # Calculate alpha and beta values
-    alpha = 255 / (maximum_gray - minimum_gray)
-    beta = -minimum_gray * alpha
-
+    It takes the contours of a painting and returns the painting extracted from the given image
+        :param cntrs: contours of the image
+        :param img: image containing paintings
+        :return: painting extracted from the image
     """
-    # Calculate new histogram with desired range and show histogram 
-    new_hist = cv2.calcHist([gray],[0],None,[256],[minimum_gray,maximum_gray])
-    plt.plot(hist)
-    plt.plot(new_hist)
-    plt.xlim([0,256])
-    plt.show()
-    """
-
-    auto_result = convertScale(image, alpha=alpha, beta=beta)
-    return (auto_result, alpha, beta)
-
-
-def contours2(img, adaptive=False):
-    # blur = cv2.medianBlur(img, 5)
-    grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    if adaptive is False:
-        _, thresh = cv2.threshold(
-            grayscale, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
-        )
-    else:
-        thresh = cv2.adaptiveThreshold(
-            grayscale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 3, 2
-        )
-
-    return cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-
-def get_rectified_painting(cntrs, f):
     # find the biggest countour (c) by the area
     c = max(cntrs, key=cv2.contourArea)
 
@@ -99,35 +31,55 @@ def get_rectified_painting(cntrs, f):
 
     # draw the biggest contour (c) in green
     # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-    t_img = f[y: y + h, x: x + w]
-    return t_img
+    extracted_painting = img[y: y + h, x: x + w]
+    return extracted_painting
 
 
-def get_good_matches(matches):
+def get_good_matches(matches, thresh=0.6):
+    """
+    Computes the best matches of 2 images that exceed a certain threshold
+        :param matches: matches from 2 images
+        :param thresh: threshold used to compute the best matches, defaults to 0.6
+        :return: best matches that exceed a certain threshold
+    """
     good = []
     for m, n in matches:
-        if m.distance < 0.6 * n.distance:
+        if m.distance < thresh * n.distance:
             good.append([m])
     return good
 
 
 def check_match(img):
+    """
+    It shows an image view that shows the best matches between all the images from database and the actual frame
+        :param img: image to show on screen
+    """
     cv2.namedWindow("Checking...", cv2.WINDOW_KEEPRATIO)
     cv2.imshow("Checking...", img)
     cv2.resizeWindow("Checking...", int(img.shape[1] / 2), int(img.shape[0] / 2))
 
 
 def show_match(img):
-    if matched_collage.size != 0:
-        print("Corrispondenza trovata")
+    """
+    If there is a matched image, the function shows it on screen
+        :param img: image to show on screen
+    """
+    if img.size != 0:
+        print("Match found!")
         cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
         cv2.imshow("Match", img)
         cv2.resizeWindow("Match", int(img.shape[1] / 2), int(img.shape[0] / 2))
     else:
-        print("Nessuna corrispondenza")
+        print("No match...")
 
 
 def compute_and_write_kp(matcher=cv2.ORB_create()):
+    """
+    Loads the images, computes keypoints and descriptors. It also writes to
+    files the computed keypoints and descriptors.
+        :param matcher: the matcher to use (i.e. ORB), defaults to cv2.ORB_create()
+        :return: the loaded images, the computed keypoints and descriptors
+    """
     images = {}
     keypoints = {}
     descriptors = {}
@@ -154,17 +106,24 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
 
 
 def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
-    if compute_and_write:
+    """
+    It loads the keypoints and descriptors from files, if any, otherwise it computes them.
+    It also returns the loaded images.
+        :param compute_and_write: if True, the function computes the keypoints and descriptors, then it saves them to files.
+        If False, the function loads the keypoints and descriptors from files, if any, defaults to False
+        :param matcher: the matcher to use (i.e. ORB), defaults to cv2.ORB_create()
+        :return: the loaded images, keypoints and descriptors
+    """
+    if os.path.exists('descriptors_db.txt') and os.path.exists('keypoints_db.txt') and (not compute_and_write):
+        with open('descriptors_db.txt', 'rb') as f1:
+            descriptors = pickle.load(f1)
+        with open('keypoints_db.txt', 'rb') as f2:
+            kp_db = pickle.load(f2)
+    else:
         return compute_and_write_kp(matcher=matcher)
 
     images = {}
     keypoints = {}
-
-    with open('descriptors_db.txt', 'rb') as f1:
-        descriptors = pickle.load(f1)
-
-    with open('keypoints_db.txt', 'rb') as f2:
-        kp_db = pickle.load(f2)
 
     for file in glob.glob("images/*.png"):
         images[file] = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
@@ -179,11 +138,18 @@ def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
 
 
 def test():
+    """
+    Test for debugging
+    """
     images2, keypoints2, descriptors2 = compute_and_write_kp()
     images, keypoints, descriptors = load_keypoints()
 
 
 def print_ranked_list(dictionary):
+    """
+    It prints on command line a sorted list of matches number between the actual frame and the images from database
+        :param dictionary: unsorted list of matches number
+    """
     ranked_list = {
         k: v for k, v in reversed(sorted(dictionary.items(), key=lambda item: item[1]))
     }
@@ -191,6 +157,10 @@ def print_ranked_list(dictionary):
 
 
 def init():
+    """
+    Initialization function
+        :return: all we need
+    """
     fm = cv2.ORB_create()
     return fm, cv2.BFMatcher(cv2.NORM_HAMMING), cv2.VideoCapture(
         "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=fm)
@@ -203,13 +173,13 @@ while cap.isOpened():
     good_global = 0
     ret, frame = cap.read()
     images_ranked_list = {}
-    contours, _ = contours2(frame)
+    contours, _ = painting_detection.contours(frame, adaptive=False)
     frame_number += 1
 
     print("\n############  FRAME N°" + str(frame_number) + "  ############\n")
     if len(contours) != 0:
 
-        img_frame = get_rectified_painting(contours, frame)
+        img_frame = get_painting_from_roi(contours, frame)
         img_frame = cv2.cvtColor(img_frame, cv2.COLOR_BGR2GRAY)
 
         kp_frame, desc_frame = brisk.detectAndCompute(img_frame, None)
@@ -238,6 +208,5 @@ while cap.isOpened():
             check_match(collage)
             if cv2.waitKey(10) & 0xFF == ord("q"):
                 break
-
         show_match(matched_collage)
         print_ranked_list(images_ranked_list)
