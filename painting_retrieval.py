@@ -5,6 +5,7 @@ import glob
 import os
 import painting_detection
 import pickle
+import time
 
 
 def get_painting_from_roi(cntrs, img):
@@ -80,6 +81,8 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
         :param matcher: the matcher to use (i.e. ORB), defaults to cv2.ORB_create()
         :return: the loaded images, the computed keypoints and descriptors
     """
+    start = time.time()
+
     images = {}
     keypoints = {}
     descriptors = {}
@@ -102,6 +105,11 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
 
     kp_out.close()
     desc_out.close()
+    end = time.time()
+
+    print("[COMPUTING MODE] Loading time: " + "%.2f" % (end - start) + " seconds\n")
+    print("___________________________________")
+
     return images, keypoints, descriptors
 
 
@@ -114,14 +122,23 @@ def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
         :param matcher: the matcher to use (i.e. ORB), defaults to cv2.ORB_create()
         :return: the loaded images, keypoints and descriptors
     """
-    if os.path.exists('descriptors_db.txt') and os.path.exists('keypoints_db.txt') and (not compute_and_write):
+    print("___________________________________")
+    if compute_and_write:
+        print("[Compute_and_write TRUE, switching to computing mode...]")
+        return compute_and_write_kp(matcher=matcher)
+
+    print("\n[Starting reading files...]")
+
+    if os.path.exists('descriptors_db.txt') and os.path.exists('keypoints_db.txt'):
+        print("[Files found...]")
         with open('descriptors_db.txt', 'rb') as f1:
             descriptors = pickle.load(f1)
         with open('keypoints_db.txt', 'rb') as f2:
             kp_db = pickle.load(f2)
     else:
+        print("[Files not found, passing to computing mode...]")
         return compute_and_write_kp(matcher=matcher)
-
+    start = time.time()
     images = {}
     keypoints = {}
 
@@ -134,6 +151,11 @@ def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
                                 _octave=point[4], _class_id=point[5])
             kp.append(temp)
         keypoints[file] = kp
+    end = time.time()
+    print("[LOADING MODE] Loading time: " + "%.2f" % (end - start) + " seconds\n")
+    print("Starting painting retrieval")
+    print("___________________________________")
+
     return images, keypoints, descriptors
 
 
@@ -154,6 +176,7 @@ def print_ranked_list(dictionary):
         k: v for k, v in reversed(sorted(dictionary.items(), key=lambda item: item[1]))
     }
     print(ranked_list)
+    print("\n#####################################")
 
 
 def init():
@@ -163,12 +186,14 @@ def init():
     """
     fm = cv2.ORB_create()
     return fm, cv2.BFMatcher(cv2.NORM_HAMMING), cv2.VideoCapture(
-        "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=fm)
+        "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=fm),
 
 
 brisk, bf, cap, frame_number, (images_db, keypoints_db, descriptors_db) = init()
 
 while cap.isOpened():
+    start = time.time()
+
     matched_collage = np.array([])
     good_global = 0
     ret, frame = cap.read()
@@ -176,7 +201,7 @@ while cap.isOpened():
     contours, _ = painting_detection.contours(frame, adaptive=False)
     frame_number += 1
 
-    print("\n############  FRAME N°" + str(frame_number) + "  ############\n")
+    print("\n############  FRAME N°" + str(frame_number) + "  ############")
     if len(contours) != 0:
 
         img_frame = get_painting_from_roi(contours, frame)
@@ -208,5 +233,9 @@ while cap.isOpened():
             check_match(collage)
             if cv2.waitKey(10) & 0xFF == ord("q"):
                 break
+
+        end = time.time()
+        print("\nTime to search the matched image: " + "%.2f" % (
+                end - start) + " seconds\n")
         show_match(matched_collage)
         print_ranked_list(images_ranked_list)
