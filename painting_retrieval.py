@@ -100,7 +100,7 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
             index.append(temp)
         kp_temp[file] = index
 
-    pickle.dump(kp_temp, kp_out)
+    pickle.dump(kp_temp, kp_out, protocol=pickle.HIGHEST_PROTOCOL)
     pickle.dump(descriptors, desc_out, protocol=pickle.HIGHEST_PROTOCOL)
 
     kp_out.close()
