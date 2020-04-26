@@ -1,8 +1,0 @@
-{
-  "python.pythonPath": "${workspaceFolder}/venv/bin/python",
-  "python.autoComplete.extraPaths": [
-    "${workspaceFolder}/venv/lib/*"
-  ],
-  "python.linting.pylintEnabled": true,
-  "python.linting.enabled": true
-}

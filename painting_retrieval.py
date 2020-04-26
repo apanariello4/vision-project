@@ -1,166 +1,241 @@
 import numpy as np
 import cv2
 import glob
+# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import os
+import painting_detection
+import pickle
+import time
 
 
-def convertScale(img, alpha, beta):
-    """Add bias and gain to an image with saturation arithmetics. Unlike
-    cv2.convertScaleAbs, it does not take an absolute value, which would lead to
-    nonsensical results (e.g., a pixel at 44 with alpha = 3 and beta = -210
-    becomes 78 with OpenCV, when in fact it should become 0).
+def get_painting_from_roi(cntrs, img):
     """
-
-    new_img = img * alpha + beta
-    new_img[new_img < 0] = 0
-    new_img[new_img > 255] = 255
-    return new_img.astype(np.uint8)
-
-
-def automatic_brightness_and_contrast(image, clip_hist_percent=25):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Calculate grayscale histogram
-    hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
-    hist_size = len(hist)
-
-    # Calculate cumulative distribution from the histogram
-    accumulator = []
-    accumulator.append(float(hist[0]))
-    for index in range(1, hist_size):
-        accumulator.append(accumulator[index - 1] + float(hist[index]))
-
-    # Locate points to clip
-    maximum = accumulator[-1]
-    clip_hist_percent *= maximum / 100.0
-    clip_hist_percent /= 2.0
-
-    # Locate left cut
-    minimum_gray = 0
-    while accumulator[minimum_gray] < clip_hist_percent:
-        minimum_gray += 1
-
-    # Locate right cut
-    maximum_gray = hist_size - 1
-    while accumulator[maximum_gray] >= (maximum - clip_hist_percent):
-        maximum_gray -= 1
-
-    # Calculate alpha and beta values
-    alpha = 255 / (maximum_gray - minimum_gray)
-    beta = -minimum_gray * alpha
-
+    It takes the contours of a painting and returns the painting extracted from the given image
+        :param cntrs: contours of the image
+        :param img: image containing paintings
+        :return: painting extracted from the image
     """
-    # Calculate new histogram with desired range and show histogram 
-    new_hist = cv2.calcHist([gray],[0],None,[256],[minimum_gray,maximum_gray])
-    plt.plot(hist)
-    plt.plot(new_hist)
-    plt.xlim([0,256])
-    plt.show()
+    # find the biggest countour (c) by the area
+    c = max(cntrs, key=cv2.contourArea)
+
+    rc = cv2.minAreaRect(c)
+    box = cv2.boxPoints(rc)
+    for p in box:
+        pt = (p[0], p[1])
+        # print(pt)
+        # cv2.circle(frame, pt, 5, (200, 0, 0), 2)
+
+    # approximate the contour (approx) with 10% tolerance
+    epsilon = 0.1 * cv2.arcLength(c, True)
+    approx = cv2.approxPolyDP(c, epsilon, True)
+    x, y, w, h = cv2.boundingRect(approx)
+
+    # draw the biggest contour (c) in green
+    # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    extracted_painting = img[y: y + h, x: x + w]
+    return extracted_painting
+
+
+def get_good_matches(matches, thresh=0.6):
     """
-
-    auto_result = convertScale(image, alpha=alpha, beta=beta)
-    return (auto_result, alpha, beta)
-
-def get_good_matches(matches):
+    Computes the best matches of 2 images that exceed a certain threshold
+        :param matches: matches from 2 images
+        :param thresh: threshold used to compute the best matches, defaults to 0.6
+        :return: best matches that exceed a certain threshold
+    """
     good = []
     for m, n in matches:
-        if m.distance < 0.6 * n.distance:
+        if m.distance < thresh * n.distance:
             good.append([m])
     return good
 
 
 def check_match(img):
+    """
+    It shows an image view that shows the best matches between all the images from database and the actual frame
+        :param img: image to show on screen
+    """
     cv2.namedWindow("Checking...", cv2.WINDOW_KEEPRATIO)
     cv2.imshow("Checking...", img)
     cv2.resizeWindow("Checking...", int(img.shape[1] / 2), int(img.shape[0] / 2))
 
 
 def show_match(img):
-    print("Corrispondenza trovata")
-    cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
-    cv2.imshow("Match", img)
-    cv2.resizeWindow("Match", int(img.shape[1] / 2), int(img.shape[0] / 2))
+    """
+    If there is a matched image, the function shows it on screen
+        :param img: image to show on screen
+    """
+    if img.size != 0:
+        print("Match found!")
+        cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
+        cv2.imshow("Match", img)
+        cv2.resizeWindow("Match", int(img.shape[1] / 2), int(img.shape[0] / 2))
+    else:
+        print("No match...")
 
 
-def load_images_from_folder_to_greyscale():
+def compute_and_write_kp(matcher=cv2.ORB_create()):
+    """
+    Loads the images, computes keypoints and descriptors. It also writes to
+    files the computed keypoints and descriptors.
+        :param matcher: the matcher to use (i.e. ORB), defaults to cv2.ORB_create()
+        :return: the loaded images, the computed keypoints and descriptors
+    """
+    start = time.time()
+
     images = {}
     keypoints = {}
+    descriptors = {}
+    kp_temp = {}
+    kp_out = open("keypoints_db.txt", "wb")
+    desc_out = open("descriptors_db.txt", "wb")
+
     for file in glob.glob("images/*.png"):
         images[file] = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-        keypoints[file] = brisk.detectAndCompute(images[file], None)
+        keypoints[file], descriptors[file] = matcher.detectAndCompute(images[file], None)
+        index = []
+        for point in keypoints[file]:
+            temp = (point.pt, point.size, point.angle, point.response, point.octave,
+                    point.class_id)
+            index.append(temp)
+        kp_temp[file] = index
 
-    return images, keypoints
+    pickle.dump(kp_temp, kp_out, protocol=pickle.HIGHEST_PROTOCOL)
+    pickle.dump(descriptors, desc_out, protocol=pickle.HIGHEST_PROTOCOL)
+
+    kp_out.close()
+    desc_out.close()
+    end = time.time()
+
+    print("[COMPUTING MODE] Loading time: " + "%.2f" % (end - start) + " seconds\n")
+    print("___________________________________")
+
+    return images, keypoints, descriptors
+
+
+def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
+    """
+    It loads the keypoints and descriptors from files, if any, otherwise it computes them.
+    It also returns the loaded images.
+        :param compute_and_write: if True, the function computes the keypoints and descriptors, then it saves them to files.
+        If False, the function loads the keypoints and descriptors from files, if any, defaults to False
+        :param matcher: the matcher to use (i.e. ORB), defaults to cv2.ORB_create()
+        :return: the loaded images, keypoints and descriptors
+    """
+    print("___________________________________")
+    if compute_and_write:
+        print("[Compute_and_write TRUE, switching to computing mode...]")
+        return compute_and_write_kp(matcher=matcher)
+
+    print("\n[Starting reading files...]")
+
+    if os.path.exists('descriptors_db.txt') and os.path.exists('keypoints_db.txt'):
+        print("[Files found...]")
+        with open('descriptors_db.txt', 'rb') as f1:
+            descriptors = pickle.load(f1)
+        with open('keypoints_db.txt', 'rb') as f2:
+            kp_db = pickle.load(f2)
+    else:
+        print("[Files not found, passing to computing mode...]")
+        return compute_and_write_kp(matcher=matcher)
+    start = time.time()
+    images = {}
+    keypoints = {}
+
+    for file in glob.glob("images/*.png"):
+        images[file] = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+        kp = []
+
+        for point in kp_db[file]:
+            temp = cv2.KeyPoint(x=point[0][0], y=point[0][1], _size=point[1], _angle=point[2], _response=point[3],
+                                _octave=point[4], _class_id=point[5])
+            kp.append(temp)
+        keypoints[file] = kp
+    end = time.time()
+    print("[LOADING MODE] Loading time: " + "%.2f" % (end - start) + " seconds\n")
+    print("Starting painting retrieval")
+    print("___________________________________")
+
+    return images, keypoints, descriptors
+
+
+def test():
+    """
+    Test for debugging
+    """
+    images2, keypoints2, descriptors2 = compute_and_write_kp()
+    images, keypoints, descriptors = load_keypoints()
 
 
 def print_ranked_list(dictionary):
-    images_ranked_list = {
+    """
+    It prints on command line a sorted list of matches number between the actual frame and the images from database
+        :param dictionary: unsorted list of matches number
+    """
+    ranked_list = {
         k: v for k, v in reversed(sorted(dictionary.items(), key=lambda item: item[1]))
     }
-    print(images_ranked_list)
+    print(ranked_list)
+    print("\n#####################################")
 
 
-def prova():
-    brisk = cv2.ORB_create()
-    cap = cv2.VideoCapture("videos/VIRB0399.mp4")
+def init():
+    """
+    Initialization function
+        :return: all we need
+    """
+    fm = cv2.ORB_create()
+    return fm, cv2.BFMatcher(cv2.NORM_HAMMING), cv2.VideoCapture(
+        "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=fm),
+
+
+brisk, bf, cap, frame_number, (images_db, keypoints_db, descriptors_db) = init()
+
+while cap.isOpened():
+    start = time.time()
+
+    matched_collage = np.array([])
     good_global = 0
-    name_painting = None
-    i = 1
+    ret, frame = cap.read()
     images_ranked_list = {}
-    (images_list, paintings_kp_from_db) = load_images_from_folder_to_greyscale()
+    contours, _ = painting_detection.contours(frame, adaptive=False)
+    frame_number += 1
 
-    while cap.isOpened():
-        good_global = 0
-        name_painting = None
-        found = False
-        print("\n############ FRAME N°" + str(i))
-        i += 1
-        ret, frame = cap.read()
-        images_ranked_list = {}
-        contours, _ = contours_detection(frame)
+    print("\n############  FRAME N°" + str(frame_number) + "  ############")
+    if len(contours) != 0:
 
-        if len(contours) != 0:
+        img_frame = get_painting_from_roi(contours, frame)
+        img_frame = cv2.cvtColor(img_frame, cv2.COLOR_BGR2GRAY)
 
-            img1 = get_painting_frame_max_area(contours, frame)
-            img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        kp_frame, desc_frame = brisk.detectAndCompute(img_frame, None)
 
-            kp1, dest1 = brisk.detectAndCompute(img1, None)
+        for file in glob.glob("images/*.png"):
 
-            for file in glob.glob("images/*.png"):
+            matches = bf.knnMatch(desc_frame, descriptors_db[file], k=2)
 
-                bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+            good = get_good_matches(matches)
 
-                matches = bf.knnMatch(dest1, paintings_kp_from_db[file][1], k=2)
+            collage = cv2.drawMatchesKnn(
+                img_frame,
+                kp_frame,
+                images_db[file],
+                keypoints_db[file],
+                good,
+                None,
+                flags=2,
+            )
 
-                good = get_good_matches(matches)
+            images_ranked_list[file] = np.asarray(good).shape[0]
+            if int(images_ranked_list[file]) > int(good_global):
+                good_global = images_ranked_list[file]
+                matched_collage = collage
 
-                img3 = cv2.drawMatchesKnn(
-                    img1,
-                    kp1,
-                    images_list[file],
-                    paintings_kp_from_db[file][0],
-                    good,
-                    None,
-                    flags=2,
-                )
-                dim_attuale = np.asarray(good).shape[0]
-                images_ranked_list[file] = dim_attuale
+            check_match(collage)
+            if cv2.waitKey(10) & 0xFF == ord("q"):
+                break
 
-                if int(dim_attuale) > int(good_global):
-                    good_global = dim_attuale
-                    name_painting = str(images_list[file])
-                    match_img = img3
-
-                check_match(img3)
-                if cv2.waitKey(10) & 0xFF == ord("q"):
-                    break
-
-            if name_painting:
-                show_match(match_img)
-                # cv2.waitKey(0)
-                # Press Q on keyboard to  exit
-                # if cv2.waitKey(20) & 0xFF == ord("q"):
-                #    break
-            else:
-                print("Nessuna corrispondenza")
-
-            print_ranked_list(images_ranked_list)
+        end = time.time()
+        print("\nTime to search the matched image: " + "%.2f" % (
+                end - start) + " seconds\n")
+        show_match(matched_collage)
+        print_ranked_list(images_ranked_list)
