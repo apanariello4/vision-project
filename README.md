@@ -1,24 +1,23 @@
-# Vision and Cognitive Systems Project
-# Università degli Studi di Modena e Reggio Emilia A.A. 2019/2020
+# Vision and Cognitive Systems Project 
+## Università degli Studi di Modena e Reggio Emilia A.A. 2019/2020
 PLACEHOLDER:
 > PLACEHOLDER
 
-PLACEHOLDER
-# PLACEHOLDER
+# Placeholder
 <img src="/media/PLACEHOLDER.png" width="150"> 
 <img src="/media/PLACEHOLDER.png" width="150"> 
 
-# Features :pencil:
+# Features
 - [x] **Painting detection:** predict a ROI for each painting
 - [ ] **Painting rectification:** correct the perspective distortion of each painting
 - [x] **Painting retrieval:** match each detected painting to the paintings DB
 - [ ] **People detection:** predict a ROI around each person
 - [ ] **People localization:** assign each person to one room on the map
 
-# Download :arrow_down:
+# Download 
 PLACEHOLDER
 
-# Credits :trophy:
+# Credits
 
 | Author  | GitHub |  LinkedIn |
 | ------------- | ------------- | ------------- |
