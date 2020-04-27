@@ -2,9 +2,10 @@ venv
 videos
 images
 /.vscode/
+__pycache__
+darknet
 output.avi
 output.mp4
-__pycache__
 test.py
 old_main.py
 keypoints_db.txt
