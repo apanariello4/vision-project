@@ -39,17 +39,21 @@ def HTRDC(edges, range_k, n, epsilon):
     k_min, k_max = range_k
     center_x, center_y, coordinates = get_center_and_coordinates(h, w)
     center = np.array((center_x, center_y))
-
+    ru = np.sqrt(np.sum(np.square(coordinates), axis=1))
 
     rd = []
     while (k_max - k_min) > epsilon:
         step = (k_max - k_min) / n
-        k_range = np.arange(start=k_min + step, stop= k_max, step=step)
+        k_range = np.arange(start=k_min + step, stop=k_max, step=step)
         for k in k_range:
             poitns_u = coordinates + (coordinates - center) * (k * np.sum(coordinates)**2)
-            ru = np.sqrt(np.sum(np.square(poitns_u), axis=1))
             rd.append(compute_rd(ru, k))
-        rd = np.array(rd)
+        rd = np.array(rd, dtype=np.float)
+        ru_copy = np.tile(ru, n).reshape(rd.shape)
+        rs = rd / ru_copy
+        ht_max = np.zeros(rs.shape[0], dtype=np.float)
+        for i in arange(rs.shape[0]):
+            undistorted = compute_undistorted()
 
 
 def compute_rd(ru, k):
@@ -82,3 +86,6 @@ def get_center_and_coordinates(h, w):
     points = np.vstack((x.ravel(), y.ravel())).T
 
     return c_x, c_y, points
+
+
+def compute_undistorted()
