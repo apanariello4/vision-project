@@ -194,7 +194,7 @@ brisk, bf, cap, frame_number, (images_db, keypoints_db, descriptors_db) = init()
 while cap.isOpened():
     start = time.time()
 
-    matched_collage = np.array([])
+    matched_collage = np.array([    ])
     good_global = 0
     ret, frame = cap.read()
     images_ranked_list = {}
