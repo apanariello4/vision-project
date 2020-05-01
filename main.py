@@ -2,13 +2,13 @@ import sys
 #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
 from cv2 import cv2
 import numpy as np
-import painting_detection, painting_retrieval, connectedComponentLabeling
+import painting_detection, painting_retrieval, ccl
 import glob
 import matplotlib.pyplot as plt
 
 # Create a VideoCapture object and read from input file
 # If the input is the camera, pass 0 instead of the video file name
-videolist = glob.glob('videos/V*.mp4')
+videolist = glob.glob('videos/2*.mp4')
 
 for video in videolist:
     cap = cv2.VideoCapture(video)
@@ -27,22 +27,27 @@ for video in videolist:
         print("Error opening video stream or file")
 
     # Read until video is completed
-    while cap.isOpened():
 
+
+    time=100
+    while cap.isOpened():
+        cap.set(1,time)
         ret, frame = cap.read()
+        time += 10
         frame = cv2.resize(frame, (960, 540))
 
         if ret == True:
 
-            #ccl = connectedComponentLabeling.labeling(frame.copy())
-            cv2.imshow('labeled.png', frame)
-            cv2.waitKey()
-            hough_contours = painting_detection.hough_contours(frame.copy())
-            contours, hierarchy = painting_detection.contours(frame.copy(), adaptive=False)
-
+            ccl_labeled = ccl.labeling(frame.copy())
+            #cv2.imshow('labeled.png', frame)
+            #cv2.waitKey()
+            hough_contours = painting_detection.hough_contours(ccl_labeled, frame.copy())
+            contours, hierarchy = painting_detection.contours(ccl_labeled, adaptive=True)
+            print(contours)
             if len(contours) != 0:
-                painting_detection.draw_contours(frame, contours, approximate=False)
 
+                #painting_detection.draw_contours(frame, contours, approximate=False)
+                painting_detection.draw_contours(frame, contours, approximate=False)
             cv2.imshow("Frame", frame)
 
             # out.write(img3)
