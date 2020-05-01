@@ -1,126 +1,55 @@
-import glob
-import cv2
+import sys
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
+from cv2 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+import painting_detection, painting_retrieval
+
 
 # Create a VideoCapture object and read from input file
 # If the input is the camera, pass 0 instead of the video file name
+cap = cv2.VideoCapture("videos/VIRB0392.MP4")
+
+frame_width = int(cap.get(3))
+frame_height = int(cap.get(4))
+
+codec = cv2.VideoWriter_fourcc(*"DIVX")
+fps = 30
+out = cv2.VideoWriter("output.avi", 0, fps, (frame_width, frame_height))
+first_frame_flag = True
 
 
-videolist = glob.glob('videos/*.mp4')
+# Check if camera opened successfully
+if cap.isOpened() == False:
+    print("Error opening video stream or file")
 
-for video in videolist:
-    cap = cv2.VideoCapture(video)
-    print("STIAMO APRENDO IL VIDEO : ",video)
-    frame_width = int(cap.get(3))
-    frame_height = int(cap.get(4))
+# Read until video is completed
+while cap.isOpened():
 
-    codec = cv2.VideoWriter_fourcc(*"DIVX")
-    fps = 30
-    out = cv2.VideoWriter('output.avi',0, fps, (frame_width,frame_height))
-    og = True
+    ret, frame = cap.read()
 
-    # Check if camera opened successfully
-    if (cap.isOpened()== False):
-        print("Error opening video stream or file")
+    if ret == True:
 
-    good_global = 0
-    name_painting = None
+        hough_contours = painting_detection.hough_contours(frame.copy())
+        contours, hierarchy = painting_detection.contours(frame.copy(), adaptive=False)
 
-    time = 0
-    time_max = 0  # e.g. 1000 max seconds of video (10 msec)
-    time_iterate = 200
-    pt1=[]
-    pt2=[]
-    # Read until video is completed
-    finish = False
+        if len(contours) != 0:
+            painting_detection.draw_contours(frame, contours, approximate=False)
 
-    while(cap.isOpened() and finish == False):
+       
+        cv2.imshow("Frame", frame)
 
-        #current position of the video in 10msec (Non in millisecondi maledetta reference)
-        cap.set(1,time)
-        ret, frame = cap.read()
-        prev_img = None
-
-
-        if ret == True:
-
-            filelist = glob.glob('images/09*.png')
-
-            if name_painting == None:
-
-                img1 = frame
-                    #img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-                img1 = cv2.resize(img1, (960, 540))
-
-                for fname in filelist:
-                    img2 = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
-
-
-                    orb = cv2.xfeatures2d.SIFT_create(contrastThreshold=0.0001, edgeThreshold=3)
-
-                    kp1, dest1 = orb.detectAndCompute(img1, None)
-                    kp2, dest2 = orb.detectAndCompute(img2, None)
-
-                    # BFMatcher with default params
-                    bf = cv2.BFMatcher()
-                    matches = bf.knnMatch(dest1, dest2, k=2)
-
-                    # Apply ratio test
-                    good = []
-                    for m, n in matches:
-                        if m.distance < 0.3 * n.distance:
-                            good.append([m])
-                            print(kp1[m.queryIdx].pt)
-                            print(kp2[m.trainIdx].pt)
-                            print("ciao")
-                            pt1.append(kp1[m.queryIdx].pt)
-                            pt2.append(kp2[m.trainIdx].pt)
-
-
-                    dim_attuale = np.asarray(good).shape[0]
-
-                    if int(dim_attuale) > int(good_global):
-                        good_global = dim_attuale
-                        name_painting = fname
-                    # cv.drawMatchesKnn expects list of lists as matches.
-
-                    img3 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-
-                    print(good)
-                    cv2.imshow('Frame',img3)
-
-                    # Press Q on keyboard to  exit
-                    if cv2.waitKey(25) & 0xFF == ord('q'):
-                        break
-
-            # update and control time
-            time += time_iterate
-
-            #picture matched
-            if name_painting:
-                print("ecco la corrispondenza")
-                img2 = cv2.imread(name_painting, cv2.IMREAD_GRAYSCALE)
-                finish = True
-
-                cv2.imshow('Frame', img2)
-
-                if cv2.waitKey(100) & 0xFF == ord('q'):
-                    break
-            else:
-                if time >= time_max:
-                    print("nessuna corrispondenza")
-                    finish = True
-        # Break the loop
-        else:
+        # out.write(img3)
+        # Press Q on keyboard to  exit
+        if cv2.waitKey(25) & 0xFF == ord("q"):
             break
 
-    # When everything done, release the video capture and writer objects
-    cap.release()
-    out.release()
+    # Break the loop
+    else:
+        break
 
-    # Closes all the frames
-    cv2.destroyAllWindows()
+# When everything done, release the video capture and writer objects
+cap.release()
+out.release()
 
-print("FINE")
-
+# Closes all the frames
+cv2.destroyAllWindows()

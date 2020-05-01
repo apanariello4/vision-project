@@ -1,149 +1,83 @@
-import glob
-import cv2
+import sys
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+from cv2 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-
-# Create a VideoCapture object and read from input file
-# If the input is the camera, pass 0 instead of the video file name
 
 
-videolist = glob.glob('videos/V*.mp4')
 
-for video in videolist:
-    cap = cv2.VideoCapture(video)
-    print("STIAMO APRENDO IL VIDEO : ",video)
-    frame_width = int(cap.get(3))
-    frame_height = int(cap.get(4))
+def contours(img, adaptive=True):
 
-    codec = cv2.VideoWriter_fourcc(*"DIVX")
-    fps = 30
-    out = cv2.VideoWriter('output.avi',0, fps, (frame_width,frame_height))
-    og = True
+    blur = cv2.medianBlur(img, 5)
+    grayscale = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
+    
+    if adaptive is False:
+        _, thresh = cv2.threshold(grayscale, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    else:
+        thresh = cv2.adaptiveThreshold(
+            grayscale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 3, 2
+        )
 
-    # Check if camera opened successfully
-    if (cap.isOpened()== False):
-        print("Error opening video stream or file")
+    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25,25))
+    # opening = cv2.morpholfirst_frameyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=3)
 
-    good_global = 0
-    name_painting = None
-
-    time = 0
-    time_max = 0  # e.g. 1000 max seconds of video (10 msec)
-    time_iterate = 200
-    pt1=[]
-    pt2=[]
-    # Read until video is completed
-    finish = False
-
-    while(cap.isOpened() and finish == False):
-
-        #current position of the video in 10msec (Non in millisecondi maledetta reference)
-        cap.set(1,time)
-        ret, frame = cap.read()
-        prev_img = None
+    return cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 
-        if ret == True:
-
-            filelist = glob.glob('images/09*.png')
-
-            if name_painting == None:
-
-                img1 = frame
-                    #img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-                img1 = cv2.resize(img1, (960, 540))
-
-                for fname in filelist:
-                    img2 = cv2.imread(fname, cv2.IMREAD_GRAYSCALE)
+def hough_contours(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray,50,150)
+    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 100, np.array([]), 50, 5)
+    
+    for line in lines:
+            for x1, y1, x2, y2 in line:
+                cv2.line(img, (x1, y1), (x2, y2), (20, 220, 20), 2)
+    return img
 
 
-                    gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-                    edges = cv2.Canny(gray, 120, 200)
-                    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, np.array([]), 50, 5)
+def draw_contours(img, contours, approximate=False):
+    # draw in blue the contours that were founded
+    cv2.drawContours(img, contours, -1, 255, 3)
 
-                    for line in lines:
-                        for x1, y1, x2, y2 in line:
-                            cv2.line(img1, (x1, y1), (x2, y2), (20, 220, 20), 2)
-                    plt.imshow(img1)
-                    plt.show()
+    # find the biggest countour (c) by the area
+    c = max(contours, key=cv2.contourArea)
 
-                    orb = cv2.xfeatures2d.SIFT_create(contrastThreshold=0.0001, edgeThreshold=3)
+    if approximate is True:
+        # approximate the contour (approx) with 10% tolerance
+        epsilon = 0.1 * cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, epsilon, True)
+        x, y, w, h = cv2.boundingRect(approx)
+    else:
+        x, y, w, h = cv2.boundingRect(c)
 
-                    kp1, dest1 = orb.detectAndCompute(img1, None)
-                    kp2, dest2 = orb.detectAndCompute(img2, None)
-
-                    # BFMatcher with default params
-                    bf = cv2.BFMatcher()
-                    matches = bf.knnMatch(dest1, dest2, k=2)
-
-                    # Apply ratio test
-                    good = []
-                    for m, n in matches:
-                        if m.distance < 0.3 * n.distance:
-                            good.append([m])
-                            print(kp1[m.queryIdx].pt)
-                            print(kp2[m.trainIdx].pt)
-                            print("ciao")
-                            pt1.append(kp1[m.queryIdx].pt)
-                            pt2.append(kp2[m.trainIdx].pt)
+    # draw the biggest contour (c) in green
+    cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 
-                    dim_attuale = np.asarray(good).shape[0]
+def detect_corners(img):
 
-                    if int(dim_attuale) > int(good_global):
-                        good_global = dim_attuale
-                        name_painting = fname
-                    # cv.drawMatchesKnn expects list of lists as matches.
+    blur = cv2.medianBlur(img, 5)
+    gray = cv2.cvtColor(blur,cv2.COLOR_BGR2GRAY)
+    gray = np.float32(gray)
+    dst = cv2.cornerHarris(gray,2,3,0.04)
 
-                    img3 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    #result is dilated for marking the corners, not important
+    dst = cv2.dilate(dst,None)
 
-                    print(good)
-                    cv2.imshow('Frame',img3)
-
-                    # Press Q on keyboard to  exit
-                    if cv2.waitKey(25) & 0xFF == ord('q'):
-                        break
-
-            # update and control time
-            time += time_iterate
-
-            #picture matched
-            if name_painting:
-                print("ecco la corrispondenza")
-                img2 = cv2.imread(name_painting, cv2.IMREAD_GRAYSCALE)
-                finish = True
-#HOMOGRAPHY
+    # Threshold for an optimal value, it may vary depending on the image.
+    img[dst>0.01*dst.max()]=[0,0,255]
 
 
-                M, _ = cv2.findHomography(np.float32(pt1), np.float32(pt2))
-                imageWarped = cv2.warpPerspective(frame, M, (frame_width,frame_height))
-                #cv2.imwrite("prova.jpg", imageWarped)
+def auto_canny(image, sigma=0.33):
+    """
+    finds the optimal threshold parameters
+    using the median of the image
+    """
+    # compute the median of the single channel pixel intensities
+    v = np.median(image)
 
-
-                plt.imshow(imageWarped)
-                plt.show()
-
-                cv2.imshow('Frame', img2)
-                while(finish==False):
-                    print("ciao")
-
-
-                if cv2.waitKey(100) & 0xFF == ord('q'):
-                    break
-            else:
-                if time >= time_max:
-                    print("nessuna corrispondenza")
-                    finish = True
-        # Break the loop
-        else:
-            break
-
-    # When everything done, release the video capture and writer objects
-    cap.release()
-    out.release()
-
-    # Closes all the frames
-    cv2.destroyAllWindows()
-
-print("FINE")
-
+    # apply automatic Canny edge detection using the computed median
+    lower = int(max(0, (1.0 - sigma) * v))
+    upper = int(min(255, (1.0 + sigma) * v))
+    edged = cv2.Canny(image, lower, upper)
+    # return the edged image
+    return edged
