@@ -21,7 +21,9 @@ def draw_components(labels):
 def labeling(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    img = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)[1]  # ensure binary
-    num_labels, labels_im = cv2.connectedComponents(img)
+    #img = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,11,2)
+    blur = cv2.blur(thresh, (5, 5))
+    num_labels, labels_im = cv2.connectedComponents(thresh)
     labeled_image = draw_components(labels_im)
     return labeled_image

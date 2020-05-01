@@ -34,8 +34,10 @@ for video in videolist:
 
         if ret == True:
 
-            ccl = connectedComponentLabeling.labeling(frame.copy())
-            hough_contours = painting_detection.hough_contours(ccl)
+            #ccl = connectedComponentLabeling.labeling(frame.copy())
+            cv2.imshow('labeled.png', frame)
+            cv2.waitKey()
+            hough_contours = painting_detection.hough_contours(frame.copy())
             contours, hierarchy = painting_detection.contours(frame.copy(), adaptive=False)
 
             if len(contours) != 0:
