@@ -2,3 +2,4 @@ numpy
 matplotlib
 opencv-python
 torch
+scikit-image
