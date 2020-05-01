@@ -3,6 +3,9 @@ import sys
 from cv2 import cv2
 import numpy as np
 import random as rng
+from skimage.filters.rank import entropy
+import skimage
+from skimage.morphology import disk
 
 def contours(img, adaptive=True):
     blur = cv2.medianBlur(img, 5)
@@ -54,6 +57,7 @@ def hough_contours(img,frame):
 
 def draw_contours(img, contours, approximate=False):
     # draw in blue the contours that were founded
+    img_for_entropy = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     cv2.drawContours(img, contours, -1, 255, 3)
 
     # find the biggest countour (c) by the area
@@ -66,6 +70,11 @@ def draw_contours(img, contours, approximate=False):
         x, y, w, h = cv2.boundingRect(approx)
     else:
         x, y, w, h = cv2.boundingRect(c)
+        crop_img = img_for_entropy[y:y + h, x:x + w]
+    #entr_img = entropy(gray, disk(10))
+    cv2.imshow("crop",crop_img)
+    entropy_scalar = skimage.measure.shannon_entropy(crop_img)
+    print("entropy",entropy_scalar)
 
     # draw the biggest contour (c) in green
     cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)

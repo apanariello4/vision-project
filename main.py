@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 # Create a VideoCapture object and read from input file
 # If the input is the camera, pass 0 instead of the video file name
-videolist = glob.glob('videos/2*.mp4')
+videolist = glob.glob('videos/V*.mp4')
 
 for video in videolist:
     cap = cv2.VideoCapture(video)
@@ -43,7 +43,7 @@ for video in videolist:
             #cv2.waitKey()
             hough_contours = painting_detection.hough_contours(ccl_labeled, frame.copy())
             contours, hierarchy = painting_detection.contours(ccl_labeled, adaptive=True)
-            print(contours)
+
             if len(contours) != 0:
 
                 #painting_detection.draw_contours(frame, contours, approximate=False)
