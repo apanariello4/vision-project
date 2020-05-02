@@ -1,8 +1,9 @@
 venv
 videos
-images
+paintings_db
 /.vscode/
 __pycache__
+darknet_yolo/weights
 darknet
 output.avi
 output.mp4
