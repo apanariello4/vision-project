@@ -1,21 +1,17 @@
+import time
+import glob
 import cv2
-# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+import numpy as np
 import painting_detection
-from utils import *
-
-
-def init():
-    """
-    Initialization function
-        :return: all we need
-    """
-    fm = cv2.ORB_create()
-    return fm, cv2.BFMatcher(cv2.NORM_HAMMING), cv2.VideoCapture(
-        "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=fm)
+from utils import (check_match, get_good_matches, get_painting_from_roi,
+                   load_keypoints, print_ranked_list, show_match)
 
 
 def retrieval():
-    brisk, bf, cap, frame_number, (images_db, keypoints_db, descriptors_db) = init()
+    orb = cv2.ORB_create()
+    bf, cap, frame_number, (images_db, keypoints_db, descriptors_db) = cv2.BFMatcher(
+        cv2.NORM_HAMMING), cv2.VideoCapture(
+        "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=orb)
 
     while cap.isOpened():
         start = time.time()
@@ -32,7 +28,7 @@ def retrieval():
 
             img_frame = get_painting_from_roi(contours, frame)
 
-            kp_frame, desc_frame = brisk.detectAndCompute(img_frame, None)
+            kp_frame, desc_frame = orb.detectAndCompute(img_frame, None)
 
             for file in glob.glob("paintings_db/*.png"):
 

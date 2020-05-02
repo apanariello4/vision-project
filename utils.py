@@ -137,8 +137,8 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
     keypoints = {}
     descriptors = {}
     kp_temp = {}
-    kp_out = open("keypoints_db.txt", "wb")
-    desc_out = open("descriptors_db.txt", "wb")
+    kp_out = open("keypoints_db", "wb")
+    desc_out = open("descriptors_db", "wb")
 
     for file in glob.glob("paintings_db/*.png"):
         images[file] = cv2.imread(file, cv2.IMREAD_COLOR)
@@ -179,11 +179,11 @@ def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
 
     print("\n[Starting reading files...]")
 
-    if os.path.exists('descriptors_db.txt') and os.path.exists('keypoints_db.txt'):
+    if os.path.exists('descriptors_db') and os.path.exists('keypoints_db'):
         print("[Files found...]")
-        with open('descriptors_db.txt', 'rb') as f1:
+        with open('descriptors_db', 'rb') as f1:
             descriptors = pickle.load(f1)
-        with open('keypoints_db.txt', 'rb') as f2:
+        with open('keypoints_db', 'rb') as f2:
             kp_db = pickle.load(f2)
     else:
         print("[Files not found, passing to computing mode...]")
