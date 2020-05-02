@@ -7,7 +7,6 @@ from cv2 import cv2
 import painting_detection
 # import painting_retrieval
 from htrdc import HTRDC, undistort
-# import htrdc
 
 HTRDC_K_START = 0.0
 HTRDC_K_END = 1e-4
@@ -51,7 +50,6 @@ def main():
     # Read until video is completed
     while cap.isOpened():
 
-        ret, frame = cap.read()
         ret, frame = cap.read()
 
         if ret == True:
