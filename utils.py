@@ -116,7 +116,7 @@ def show_match(img):
         :param img: image to show on screen
     """
     if img.size != 0:
-        print("Match found!")
+        print("Match found: ", end="", flush=True)
         cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
         cv2.imshow("Match", img)
         cv2.resizeWindow("Match", int(img.shape[1] / 2), int(img.shape[0] / 2))
@@ -157,8 +157,7 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
     desc_out.close()
     end = time.time()
 
-    print("[COMPUTING MODE] Loading time: " + "%.2f" % (end - start) + " seconds\n")
-    print("___________________________________")
+    print("[COMPUTING MODE] Loading time: " + "%.2f" % (end - start) + " seconds")
 
     return images, keypoints, descriptors
 
@@ -177,10 +176,10 @@ def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
         print("[Compute_and_write TRUE, switching to computing mode...]")
         return compute_and_write_kp(matcher=matcher)
 
-    print("\n[Starting reading files...]")
+    print("Reading files...", end="", flush=True)
 
     if os.path.exists('descriptors_db') and os.path.exists('keypoints_db'):
-        print("[Files found...]")
+        print("[Files found]")
         with open('descriptors_db', 'rb') as f1:
             descriptors = pickle.load(f1)
         with open('keypoints_db', 'rb') as f2:
@@ -202,9 +201,7 @@ def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
             kp.append(temp)
         keypoints[file] = kp
     end = time.time()
-    print("[LOADING MODE] Loading time: " + "%.2f" % (end - start) + " seconds\n")
-    print("Starting painting retrieval")
-    print("___________________________________")
+    print("[LOADING MODE] Loading time: " + "%.2f" % (end - start) + " seconds")
 
     return images, keypoints, descriptors
 
@@ -225,7 +222,10 @@ def print_ranked_list(dictionary):
     ranked_list = {
         k: v for k, v in reversed(sorted(dictionary.items(), key=lambda item: item[1]))
     }
-    print(ranked_list)
+    print("Ranked list: ", end="", flush=True)
+    for item in ranked_list:
+        print("\"" + item + "\"" + " with " + "\"" + str(ranked_list[item]) + "\" matches" + "\t|\t", end="",
+              flush=True)
     print("\n#####################################")
 
 ################################################################################################
