@@ -12,7 +12,8 @@ def retrieval():
     bf, cap, frame_number, (images_db, keypoints_db, descriptors_db) = cv2.BFMatcher(
         cv2.NORM_HAMMING), cv2.VideoCapture(
         "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=orb)
-
+    print("Starting painting retrieval")
+    print("___________________________________")
     while cap.isOpened():
         start = time.time()
 
@@ -56,10 +57,13 @@ def retrieval():
                     break
 
             end = time.time()
-            print("\nTime to search the matched image: " + "%.2f" % (
-                    end - start) + " seconds\n")
+            print("Time to search the matched image: " + "%.2f" % (
+                    end - start) + " seconds")
             show_match(matched_collage)
-            print_ranked_list(images_ranked_list)
+            
+            if matched_collage.size != 0:
+                print(max(images_ranked_list, key=images_ranked_list.get))
+                print_ranked_list(images_ranked_list)
 
 
 if __name__ == '__main__':
