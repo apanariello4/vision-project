@@ -7,6 +7,13 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Main",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/nello/Desktop/vision-project/main.py",
+            "console": "integratedTerminal"
         }
     ]
 }
