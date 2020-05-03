@@ -5,9 +5,10 @@ import numpy as np
 from cv2 import cv2
 
 import painting_detection
-from painting_retrieval import retrieval
+from ccl import *
 from htrdc import HTRDC, undistort
-from ccl import labeling
+from painting_retrieval import retrieval
+
 # from people_detection import detection
 
 HTRDC_K_START = 0.0
@@ -33,7 +34,7 @@ def compute_HTRDC(img):
 def main():
     # Create a VideoCapture object and read from input file
     # If the input is the camera, pass 0 instead of the video file name
-    cap = cv2.VideoCapture("videos/VIRB0391.MP4")
+    cap = cv2.VideoCapture("videos/VIRB0416.MP4")
     # cap = cv2.VideoCapture("videos/GOPR5819.MP4")
 
     frame_width = int(cap.get(3))
@@ -56,16 +57,21 @@ def main():
 
         if ret == True:
 
-            # hough_contours = painting_detection.hough_contours(frame.copy())
-            # contours, hierarchy = painting_detection.contours(
-            #     frame.copy(), adaptive=False)
+            hough_contours = painting_detection.hough_contours(frame.copy())
+            contours, hierarchy = painting_detection.contours(
+                frame.copy(), adaptive=False)
 
-            # if len(contours) != 0:
-            #     painting_detection.draw_contours(
-            #         frame.copy(), contours, approximate=False)
-            # # img = resize_when_too_big(frame, (720, 405))
-            img = labeling(frame)
-            cv2.imshow("Frame", img)
+            if len(contours) != 0:
+                painting_detection.draw_contours(
+                    frame.copy(), contours, approximate=False)
+            # img = resize_when_too_big(frame, (720, 405))
+            components = labeling(frame)
+            drawn_components = draw_components(components)
+
+            painting_detection.draw_contours(
+                drawn_components, contours, approximate=True)
+
+            cv2.imshow("Frame", drawn_components)
 
             # out.write(img3)
             # Press Q on keyboard to  exit
