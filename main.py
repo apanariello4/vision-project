@@ -5,9 +5,11 @@ import numpy as np
 from cv2 import cv2
 from people_detection import DetectNet
 import painting_detection
-# import painting_retrieval
+from ccl import *
 from htrdc import HTRDC, undistort
-from darknet_yolo.darknet_pytorch import Darknet
+from painting_retrieval import retrieval
+from people_detection import detection
+from utils import resize_when_too_big
 
 HTRDC_K_START = 0.0
 HTRDC_K_END = 1e-4
@@ -31,7 +33,7 @@ def compute_HTRDC(img):
 def main():
     # Create a VideoCapture object and read from input file
     # If the input is the camera, pass 0 instead of the video file name
-    cap = cv2.VideoCapture("videos/VIRB0392.MP4")
+    cap = cv2.VideoCapture("videos/VIRB0416.MP4")
     # cap = cv2.VideoCapture("videos/GOPR5819.MP4")
 
     frame_width = int(cap.get(3))
@@ -53,15 +55,23 @@ def main():
         ret, frame = cap.read()
 
         if ret == True:
-            detect.yolo_detection(frame)
-            # hough_contours = painting_detection.hough_contours(frame.copy())
-            # contours, hierarchy = painting_detection.contours(
-            #     frame.copy(), adaptive=False)
 
-            # if len(contours) != 0:
-            #     painting_detection.draw_contours(
-            #         frame.copy(), contours, approximate=False)
-            # # img = resize_when_too_big(frame, (720, 405))
+            hough_contours = painting_detection.hough_contours(frame.copy())
+            contours, hierarchy = painting_detection.contours(
+                frame.copy(), adaptive=False)
+
+            if len(contours) != 0:
+                painting_detection.draw_contours(
+                    frame.copy(), contours, approximate=False)
+
+            img = resize_when_too_big(frame, (720, 405))
+            components = labeling(img)
+            drawn_components = draw_components(components)
+
+            painting_detection.draw_contours(
+                drawn_components, contours, approximate=True)
+
+            cv2.imshow("Frame", drawn_components)
 
             # out.write(img3)
             # Press Q on keyboard to  exit
