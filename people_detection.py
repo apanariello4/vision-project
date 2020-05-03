@@ -1,198 +1,140 @@
-import cv2
 import numpy as np
-import ctypes
-import sys
-import matplotlib.pyplot as plt
-from threading import Thread
-import os
 import cv2
-import torch
+import torch.hub
 from torchvision import models
 import torchvision.transforms as transforms
-import torchvision.datasets as datasets
-from PIL import Image
+import time
 
 
-def process_image(im):
-    # Scales, crops, and normalizes a PIL image for a PyTorch model,
-    # returns an Numpy array
-    # Process a PIL image for use in a PyTorch model
-    # im = torch.from_numpy(im).long()
-    process = transforms.Compose(
-        [
-            transforms.ToPILImage(),
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+def show(img):
+    """
+        :param img: image to show on screen
+    """
+    if img.size != 0:
+        cv2.namedWindow('People Detection', cv2.WINDOW_KEEPRATIO)
+        cv2.imshow('People Detection', img)
+        cv2.resizeWindow('People Detection', int(img.shape[1] / 2), int(img.shape[0] / 2))
+    else:
+        print("No match...")
+
+
+class DetectNet:
+    def __init__(self, threshold=0.5):
+        self.classes = [
+            '__background__', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+            'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'N/A', 'stop sign',
+            'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
+            'elephant', 'bear', 'zebra', 'giraffe', 'N/A', 'backpack', 'umbrella', 'N/A', 'N/A',
+            'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
+            'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket',
+            'bottle', 'N/A', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
+            'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
+            'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table',
+            'N/A', 'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone',
+            'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A', 'book',
+            'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
         ]
-    )
-    im = process(im)
-    return im
+        self.model = models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+        self.model.eval()
+        self.colors = np.random.uniform(0, 255, size=(len(self.classes), 3))
+        self.threshold = threshold
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    def detect(self, img):
+        transform = transforms.Compose([transforms.ToPILImage(),
+                                        transforms.ToTensor()], )
+        img_t = transform(img).to(self.device)
+
+        with torch.no_grad():
+            pred = self.model([img_t])
+
+        pred_class = [self.classes[i] for i in list(pred[0]['labels'].cpu().clone().numpy())]
+        pred_boxes = [[(i[0], i[1]), (i[2], i[3])] for i in list(pred[0]['boxes'].detach().cpu().clone().numpy())]
+        pred_score = list(pred[0]['scores'].detach().cpu().clone().numpy())
+        pred_t = [pred_score.index(x) for x in pred_score if x > self.threshold][-1]
+        pred_boxes = pred_boxes[:pred_t + 1]
+        pred_class = pred_class[:pred_t + 1]
+
+        for i in range(len(pred_boxes)):
+            if pred_class[i] == 'person':
+                left = int(pred_boxes[i][0][0])
+                top = int(pred_boxes[i][0][1])
+                right = int(pred_boxes[i][1][0])
+                bottom = int(pred_boxes[i][1][1])
+                # color = self.colors[pred_colors[i] % len(self.colors)]
+                self.draw_boxes(img, pred_class[i], pred_score[i], left, top, right, bottom, (0, 0, 255))
+
+    def draw_boxes(self, img, class_id, score, left, top, right, bottom, color):
+        txt_color = (0, 0, 0)
+        if sum(color) < 500:
+            txt_color = (255, 255, 255)
+
+        cv2.rectangle(img, (left, top), (right, bottom), color=color, thickness=3)
+
+        label = '{}%'.format(round((score * 100), 1))
+        if self.classes:
+            label = '%s %s' % (class_id, label)
+
+        label_size, base_line = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+        top = max(top, label_size[1])
+        cv2.rectangle(img, (left, top - round(1.5 * label_size[1])),
+                      (left + round(1.5 * label_size[0]), top + base_line), color=color, thickness=cv2.FILLED)
+        cv2.putText(img, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.75, color=txt_color, thickness=2)
+
+    def process_image(self, img):
+        # Scales, crops, and normalizes a PIL image for a PyTorch model,
+        # returns an Numpy array
+        # Process a PIL image for use in a PyTorch model
+        # im = torch.from_numpy(im).long()
+        process = transforms.Compose(
+            [
+                transforms.ToPILImage(),
+                # transforms.Resize(256),
+                # transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ]
+        )
+        img = process(img)
+        return img
 
 
-def get_prediction(img, threshold):
-    img = process_image(img)
-    img = img.unsqueeze(0)
-    pred = model(img)  # Pass the image to the model
-    print("lakjd")
-    scores = pred[0]["scores"].detach().numpy()
-    pred_boxes = []
-    pred_classes = []
-    pred_score = []
-    for i in range(len(scores)):
-        if scores[i] > threshold:
-            pred_score.append(scores[i])
-            pred_boxes.append(pred[0]["boxes"].detach().numpy()[i])
-            pred_classes.append(
-                COCO_INSTANCE_CATEGORY_NAMES[int(pred[0]["labels"].numpy()[i])]
-            )
-            print("lajsdlkajksld")
+def detection(frame=cv2.imread("paintings_db/064.png", cv2.IMREAD_COLOR)):
+    net = DetectNet()
+    start = time.time()
+    net.detect(frame)
+    end = time.time()
 
-    pred_boxes = [
-        [(i[0], i[1]), (i[2], i[3])] for i in list(pred[0]["boxes"].detach().numpy())
-    ]  # Bounding boxes
-    pred_score = list(pred[0]["scores"].detach().numpy())
-
-    pred_t = [
-        pred_score.index(x) for x in pred_score if x > threshold
-    ]  # Get list of index with score greater than threshold.
-
-    return pred_boxes, pred_classes
-
-
-ratio = 0.1
-
-model = models.detection.keypointrcnn_resnet50_fpn(pretrained=True)
-model.eval()
-COCO_INSTANCE_CATEGORY_NAMES = [
-    "__background__",
-    "person",
-    "bicycle",
-    "car",
-    "motorcycle",
-    "airplane",
-    "bus",
-    "train",
-    "truck",
-    "boat",
-    "traffic light",
-    "fire hydrant",
-    "N/A",
-    "stop sign",
-    "parking meter",
-    "bench",
-    "bird",
-    "cat",
-    "dog",
-    "horse",
-    "sheep",
-    "cow",
-    "elephant",
-    "bear",
-    "zebra",
-    "giraffe",
-    "N/A",
-    "backpack",
-    "umbrella",
-    "N/A",
-    "N/A",
-    "handbag",
-    "tie",
-    "suitcase",
-    "frisbee",
-    "skis",
-    "snowboard",
-    "sports ball",
-    "kite",
-    "baseball bat",
-    "baseball glove",
-    "skateboard",
-    "surfboard",
-    "tennis racket",
-    "bottle",
-    "N/A",
-    "wine glass",
-    "cup",
-    "fork",
-    "knife",
-    "spoon",
-    "bowl",
-    "banana",
-    "apple",
-    "sandwich",
-    "orange",
-    "broccoli",
-    "carrot",
-    "hot dog",
-    "pizza",
-    "donut",
-    "cake",
-    "chair",
-    "couch",
-    "potted plant",
-    "bed",
-    "N/A",
-    "dining table",
-    "N/A",
-    "N/A",
-    "toilet",
-    "N/A",
-    "tv",
-    "laptop",
-    "mouse",
-    "remote",
-    "keyboard",
-    "cell phone",
-    "microwave",
-    "oven",
-    "toaster",
-    "sink",
-    "refrigerator",
-    "N/A",
-    "book",
-    "clock",
-    "vase",
-    "scissors",
-    "teddy bear",
-    "hair drier",
-    "toothbrush",
-]
-
-cap = cv2.VideoCapture("videos/20180206_114604.MP4")
-
-# with open("coco.names", "r") as f:
-#     CLASSES = [line.strip() for line in f.readlines()]
-
-COLORS = np.random.uniform(0, 255, size=(len(COCO_INSTANCE_CATEGORY_NAMES), 3))
-
-while True:
-    ret, frame = cap.read()
-    image = frame.copy()
-
-    boxes, detections = get_prediction(image, 0.2)
-    print("alksjdlakjds")
-    for box in boxes:
-        # label = "{}: {:.2f}%".format(CLASSES[idx], confidence * 100)
-
-        startX = int(box[0][0])
-        startY = int(box[0][1])
-        endX = int(box[1][0])
-        endY = int(box[1][1])
-
-        cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 3)
-        print("alksdlas")
-        # y = startY - 15 if startY - 15 > 15 else startY + 15
-        # cv2.putText(
-        #     frame,
-        #     "PERSON" + " - ratio: " + str(round((detection.Area) / (h * w), 2)),
-        #     (startX, y),
-        #     cv2.FONT_HERSHEY_SIMPLEX,
-        #     0.5,
-        #     COLORS[idx],
-        #     2,
-        # )
-    cv2.namedWindow("Frame", cv2.WINDOW_KEEPRATIO)
-    cv2.imshow("Frame", frame)
-    cv2.resizeWindow("Frame", int(frame.shape[1] / 2), int(frame.shape[0] / 2))
+    cv2.putText(frame, '{:.2f}ms'.format((end - start) * 1000), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
+                (255, 0, 0),
+                2)
+    show(frame)
+    # cv2.imshow('People Detection', frame)
+    print("FPS {:5.2f}".format(1 / (end - start)))
     cv2.waitKey()
+
+# def detection(img):
+#     net = DetectNet()
+#     cap = cv2.VideoCapture("videos/20180206_114604.MP4")
+#
+#     while True:
+#         ret, frame = cap.read()
+#         image = frame.copy()
+#
+#         start = time.time()
+#         net.detect(image)
+#         end = time.time()
+#
+#         cv2.putText(image, '{:.2f}ms'.format((end - start) * 1000), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
+#                     (255, 0, 0),
+#                     2)
+#
+#         show(image)
+#         # cv2.imshow('People Detection', frame)
+#         print("FPS {:5.2f}".format(1 / (end - start)))
+#         if cv2.waitKey(1) & 0xFF == ord('q'):
+#             break
+#
+#
+# if __name__ == '__main__':
+#     detection()

@@ -1,55 +1,95 @@
 import sys
-#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
-from cv2 import cv2
+
 import numpy as np
-import painting_detection, painting_retrieval
+# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
+from cv2 import cv2
+
+import painting_detection
+from ccl import *
+from htrdc import HTRDC, undistort
+from painting_retrieval import retrieval
+from people_detection import detection
+from utils import resize_when_too_big
+
+HTRDC_K_START = 0.0
+HTRDC_K_END = 1e-4
+HTRDC_N = 20
+HTRDC_EPSILON = 1e-6
 
 
-# Create a VideoCapture object and read from input file
-# If the input is the camera, pass 0 instead of the video file name
-cap = cv2.VideoCapture("videos/VIRB0392.MP4")
+def compute_HTRDC(img):
 
-frame_width = int(cap.get(3))
-frame_height = int(cap.get(4))
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (3, 3), 15)
+    canny = painting_detection.auto_canny(gray)
+    print("Computing HTRDC")
+    if not k:  # Computes k only for the first frame
+        k = HTRDC(canny,
+                  (HTRDC_K_START, HTRDC_K_END), HTRDC_N, HTRDC_EPSILON)
+    print("Distortion Parameter: ", k)
 
-codec = cv2.VideoWriter_fourcc(*"DIVX")
-fps = 30
-out = cv2.VideoWriter("output.avi", 0, fps, (frame_width, frame_height))
-first_frame_flag = True
+    return undistort(img, k)
 
 
-# Check if camera opened successfully
-if cap.isOpened() == False:
-    print("Error opening video stream or file")
+def main():
+    # Create a VideoCapture object and read from input file
+    # If the input is the camera, pass 0 instead of the video file name
+    cap = cv2.VideoCapture("videos/VIRB0416.MP4")
+    # cap = cv2.VideoCapture("videos/GOPR5819.MP4")
 
-# Read until video is completed
-while cap.isOpened():
+    frame_width = int(cap.get(3))
+    frame_height = int(cap.get(4))
 
-    ret, frame = cap.read()
+    codec = cv2.VideoWriter_fourcc(*"DIVX")
+    fps = 30
+    out = cv2.VideoWriter("output.avi", 0, fps, (frame_width, frame_height))
+    first_frame_flag = True
+    k = None
 
-    if ret == True:
+    # Check if camera opened successfully
+    if cap.isOpened() == False:
+        print("Error opening video stream or file")
 
-        hough_contours = painting_detection.hough_contours(frame.copy())
-        contours, hierarchy = painting_detection.contours(frame.copy(), adaptive=False)
+    # Read until video is completed
+    while cap.isOpened():
 
-        if len(contours) != 0:
-            painting_detection.draw_contours(frame, contours, approximate=False)
+        ret, frame = cap.read()
 
-       
-        cv2.imshow("Frame", frame)
+        if ret == True:
 
-        # out.write(img3)
-        # Press Q on keyboard to  exit
-        if cv2.waitKey(25) & 0xFF == ord("q"):
+            hough_contours = painting_detection.hough_contours(frame.copy())
+            contours, hierarchy = painting_detection.contours(
+                frame.copy(), adaptive=False)
+
+            if len(contours) != 0:
+                painting_detection.draw_contours(
+                    frame.copy(), contours, approximate=False)
+
+            img = resize_when_too_big(frame, (720, 405))
+            components = labeling(img)
+            drawn_components = draw_components(components)
+
+            painting_detection.draw_contours(
+                drawn_components, contours, approximate=True)
+
+            cv2.imshow("Frame", drawn_components)
+
+            # out.write(img3)
+            # Press Q on keyboard to  exit
+            if cv2.waitKey(25) & 0xFF == ord("q"):
+                break
+
+        # Break the loop
+        else:
             break
 
-    # Break the loop
-    else:
-        break
+    # When everything done, release the video capture and writer objects
+    cap.release()
+    out.release()
 
-# When everything done, release the video capture and writer objects
-cap.release()
-out.release()
+    # Closes all the frames
+    cv2.destroyAllWindows()
 
-# Closes all the frames
-cv2.destroyAllWindows()
+
+if __name__ == '__main__':
+    main()

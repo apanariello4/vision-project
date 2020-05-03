@@ -1,11 +1,10 @@
-import numpy as np
-import cv2
-import glob
-# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import os
-import painting_detection
 import pickle
 import time
+import glob
+import cv2
+import numpy as np
+from painting_detection import contours
 
 
 def get_painting_from_roi(cntrs, img):
@@ -38,8 +37,8 @@ def get_painting_from_roi(cntrs, img):
 
 def get_good_matches(matches, thresh=0.6):
     """
-    Computes the best matches of 2 images that exceed a certain threshold
-        :param matches: matches from 2 images
+    Computes the best matches of 2 paintings_db that exceed a certain threshold
+        :param matches: matches from 2 paintings_db
         :param thresh: threshold used to compute the best matches, defaults to 0.6
         :return: best matches that exceed a certain threshold
     """
@@ -52,12 +51,13 @@ def get_good_matches(matches, thresh=0.6):
 
 def check_match(img):
     """
-    It shows an image view that shows the best matches between all the images from database and the actual frame
+    It shows an image view that shows the best matches between all the paintings_db from database and the actual frame
         :param img: image to show on screen
     """
     cv2.namedWindow("Checking...", cv2.WINDOW_KEEPRATIO)
     cv2.imshow("Checking...", img)
-    cv2.resizeWindow("Checking...", int(img.shape[1] / 2), int(img.shape[0] / 2))
+    cv2.resizeWindow("Checking...", int(
+        img.shape[1] / 2), int(img.shape[0] / 2))
 
 
 def show_match(img):
@@ -66,20 +66,21 @@ def show_match(img):
         :param img: image to show on screen
     """
     if img.size != 0:
-        print("Match found!")
+        print("Match found: ", end="", flush=True)
         cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
         cv2.imshow("Match", img)
         cv2.resizeWindow("Match", int(img.shape[1] / 2), int(img.shape[0] / 2))
+        cv2.waitKey()
     else:
         print("No match...")
 
 
 def compute_and_write_kp(matcher=cv2.ORB_create()):
     """
-    Loads the images, computes keypoints and descriptors. It also writes to
+    Loads the paintings_db, computes keypoints and descriptors. It also writes to
     files the computed keypoints and descriptors.
         :param matcher: the matcher to use (i.e. ORB), defaults to cv2.ORB_create()
-        :return: the loaded images, the computed keypoints and descriptors
+        :return: the loaded paintings_db, the computed keypoints and descriptors
     """
     start = time.time()
 
@@ -87,12 +88,13 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
     keypoints = {}
     descriptors = {}
     kp_temp = {}
-    kp_out = open("keypoints_db.txt", "wb")
-    desc_out = open("descriptors_db.txt", "wb")
+    kp_out = open("keypoints_db", "wb")
+    desc_out = open("descriptors_db", "wb")
 
-    for file in glob.glob("images/*.png"):
-        images[file] = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-        keypoints[file], descriptors[file] = matcher.detectAndCompute(images[file], None)
+    for file in glob.glob("paintings_db/*.png"):
+        images[file] = cv2.imread(file, cv2.IMREAD_COLOR)
+        keypoints[file], descriptors[file] = matcher.detectAndCompute(
+            images[file], None)
         index = []
         for point in keypoints[file]:
             temp = (point.pt, point.size, point.angle, point.response, point.octave,
@@ -107,8 +109,8 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
     desc_out.close()
     end = time.time()
 
-    print("[COMPUTING MODE] Loading time: " + "%.2f" % (end - start) + " seconds\n")
-    print("___________________________________")
+    print("[COMPUTING MODE] Loading time: " + "%.2f" %
+          (end - start) + " seconds")
 
     return images, keypoints, descriptors
 
@@ -116,24 +118,24 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
 def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
     """
     It loads the keypoints and descriptors from files, if any, otherwise it computes them.
-    It also returns the loaded images.
+    It also returns the loaded paintings_db.
         :param compute_and_write: if True, the function computes the keypoints and descriptors, then it saves them to files.
         If False, the function loads the keypoints and descriptors from files, if any, defaults to False
         :param matcher: the matcher to use (i.e. ORB), defaults to cv2.ORB_create()
-        :return: the loaded images, keypoints and descriptors
+        :return: the loaded paintings_db, keypoints and descriptors
     """
     print("___________________________________")
     if compute_and_write:
         print("[Compute_and_write TRUE, switching to computing mode...]")
         return compute_and_write_kp(matcher=matcher)
 
-    print("\n[Starting reading files...]")
+    print("Reading files...", end="", flush=True)
 
-    if os.path.exists('descriptors_db.txt') and os.path.exists('keypoints_db.txt'):
-        print("[Files found...]")
-        with open('descriptors_db.txt', 'rb') as f1:
+    if os.path.exists('descriptors_db') and os.path.exists('keypoints_db'):
+        print("[Files found]")
+        with open('descriptors_db', 'rb') as f1:
             descriptors = pickle.load(f1)
-        with open('keypoints_db.txt', 'rb') as f2:
+        with open('keypoints_db', 'rb') as f2:
             kp_db = pickle.load(f2)
     else:
         print("[Files not found, passing to computing mode...]")
@@ -142,8 +144,8 @@ def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
     images = {}
     keypoints = {}
 
-    for file in glob.glob("images/*.png"):
-        images[file] = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+    for file in glob.glob("paintings_db/*.png"):
+        images[file] = cv2.imread(file, cv2.IMREAD_COLOR)
         kp = []
 
         for point in kp_db[file]:
@@ -152,9 +154,8 @@ def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
             kp.append(temp)
         keypoints[file] = kp
     end = time.time()
-    print("[LOADING MODE] Loading time: " + "%.2f" % (end - start) + " seconds\n")
-    print("Starting painting retrieval")
-    print("___________________________________")
+    print("[LOADING MODE] Loading time: " + "%.2f" %
+          (end - start) + " seconds")
 
     return images, keypoints, descriptors
 
@@ -169,47 +170,54 @@ def test():
 
 def print_ranked_list(dictionary):
     """
-    It prints on command line a sorted list of matches number between the actual frame and the images from database
+    It prints on command line a sorted list of matches number between the actual frame and the paintings_db from database
         :param dictionary: unsorted list of matches number
     """
     ranked_list = {
         k: v for k, v in reversed(sorted(dictionary.items(), key=lambda item: item[1]))
     }
-    print(ranked_list)
-    print("\n#####################################")
+    print("Ranked list: ", end="", flush=True)
+    for item in ranked_list:
+        if ranked_list[item] > 0:
+            print("\"" + item + "\"" + " with " + "\"" + str(ranked_list[item]) + "\" keypoints matched" + "\t|\t",
+                  end="",
+                  flush=True)
+        else:
+            print("...")
+            break
 
 
-def init():
+FRAME_NUMBER = 0
+
+
+def retrieval(frame):
     """
-    Initialization function
-        :return: all we need
+    For every video frame, it retrieves from paintings_db the painting with more keypoints matches
     """
-    fm = cv2.ORB_create()
-    return fm, cv2.BFMatcher(cv2.NORM_HAMMING), cv2.VideoCapture(
-        "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=fm),
+    orb = cv2.ORB_create()
 
+    bf, frame_number, (images_db, keypoints_db, descriptors_db) = cv2.BFMatcher(
+        cv2.NORM_HAMMING), 0, load_keypoints(compute_and_write=False, matcher=orb)
 
-brisk, bf, cap, frame_number, (images_db, keypoints_db, descriptors_db) = init()
-
-while cap.isOpened():
+    print("Starting painting retrieval")
+    print("___________________________________")
     start = time.time()
 
     matched_collage = np.array([])
     good_global = 0
-    ret, frame = cap.read()
     images_ranked_list = {}
-    contours, _ = painting_detection.contours(frame, adaptive=False)
-    frame_number += 1
+    cntrs, _ = contours(frame, adaptive=False)
+    global FRAME_NUMBER
+    FRAME_NUMBER += 1
 
-    print("\n############  FRAME N°" + str(frame_number) + "  ############")
-    if len(contours) != 0:
+    print("\n############  FRAME N°" + str(FRAME_NUMBER) + "  ############")
+    if len(cntrs) != 0:
 
-        img_frame = get_painting_from_roi(contours, frame)
-        img_frame = cv2.cvtColor(img_frame, cv2.COLOR_BGR2GRAY)
+        img_frame = get_painting_from_roi(cntrs, frame)
 
-        kp_frame, desc_frame = brisk.detectAndCompute(img_frame, None)
+        kp_frame, desc_frame = orb.detectAndCompute(img_frame, None)
 
-        for file in glob.glob("images/*.png"):
+        for file in glob.glob("paintings_db/*.png"):
 
             matches = bf.knnMatch(desc_frame, descriptors_db[file], k=2)
 
@@ -235,7 +243,83 @@ while cap.isOpened():
                 break
 
         end = time.time()
-        print("\nTime to search the matched image: " + "%.2f" % (
-                end - start) + " seconds\n")
+        print("Time to search the matched image: " + "%.2f" % (
+            end - start) + " seconds")
         show_match(matched_collage)
-        print_ranked_list(images_ranked_list)
+
+        if matched_collage.size != 0:
+            print(max(images_ranked_list, key=images_ranked_list.get))
+            print_ranked_list(images_ranked_list)
+        print("#####################################")
+
+# if __name__ == '__main__':
+#     retrieval()
+
+
+############ OLD #############
+
+# def retrieval():
+#     """
+#     For every video frame, it retrieves from paintings_db the painting with more keypoints matches
+#     """
+#     orb = cv2.ORB_create()
+#
+#     bf, cap, frame_number, (images_db, keypoints_db, descriptors_db) = cv2.BFMatcher(
+#         cv2.NORM_HAMMING), cv2.VideoCapture(
+#         "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=orb)
+#
+#     print("Starting painting retrieval")
+#     print("___________________________________")
+#     while cap.isOpened():
+#         start = time.time()
+#
+#         matched_collage = np.array([])
+#         good_global = 0
+#         ret, frame = cap.read()
+#         images_ranked_list = {}
+#         cntrs, _ = contours(frame, adaptive=False)
+#         frame_number += 1
+#
+#         print("\n############  FRAME N°" + str(frame_number) + "  ############")
+#         if len(cntrs) != 0:
+#
+#             img_frame = get_painting_from_roi(cntrs, frame)
+#
+#             kp_frame, desc_frame = orb.detectAndCompute(img_frame, None)
+#
+#             for file in glob.glob("paintings_db/*.png"):
+#
+#                 matches = bf.knnMatch(desc_frame, descriptors_db[file], k=2)
+#
+#                 good = get_good_matches(matches)
+#
+#                 collage = cv2.drawMatchesKnn(
+#                     img_frame,
+#                     kp_frame,
+#                     images_db[file],
+#                     keypoints_db[file],
+#                     good,
+#                     None,
+#                     flags=2,
+#                 )
+#
+#                 images_ranked_list[file] = np.asarray(good).shape[0]
+#                 if int(images_ranked_list[file]) > int(good_global):
+#                     good_global = images_ranked_list[file]
+#                     matched_collage = collage
+#
+#                 check_match(collage)
+#                 if cv2.waitKey(10) & 0xFF == ord("q"):
+#                     break
+#
+#             end = time.time()
+#             print("Time to search the matched image: " + "%.2f" % (
+#                     end - start) + " seconds")
+#             show_match(matched_collage)
+#
+#             if matched_collage.size != 0:
+#                 print(max(images_ranked_list, key=images_ranked_list.get))
+#                 print_ranked_list(images_ranked_list)
+#             print("#####################################")
+#
+#
