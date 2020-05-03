@@ -7,6 +7,7 @@ from cv2 import cv2
 import painting_detection
 from painting_retrieval import retrieval
 from htrdc import HTRDC, undistort
+from ccl import labeling
 # from people_detection import detection
 
 HTRDC_K_START = 0.0
@@ -28,12 +29,7 @@ def compute_HTRDC(img):
 
     return undistort(img, k)
 
-    codec = cv2.VideoWriter_fourcc(*"DIVX")
-    fps = 30
-    out = cv2.VideoWriter("output.avi", 0, fps, (frame_width, frame_height))
-    first_frame_flag = True
 
-<<<<<<< HEAD
 def main():
     # Create a VideoCapture object and read from input file
     # If the input is the camera, pass 0 instead of the video file name
@@ -68,8 +64,8 @@ def main():
             #     painting_detection.draw_contours(
             #         frame.copy(), contours, approximate=False)
             # # img = resize_when_too_big(frame, (720, 405))
-            detection()
-            cv2.imshow("Frame", frame)
+            img = labeling(frame)
+            cv2.imshow("Frame", img)
 
             # out.write(img3)
             # Press Q on keyboard to  exit
@@ -90,48 +86,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-=======
-
-    # Check if camera opened successfully
-    if cap.isOpened() == False:
-        print("Error opening video stream or file")
-
-    # Read until video is completed
-
-
-    time=100
-    while cap.isOpened():
-        cap.set(1,time)
-        ret, frame = cap.read()
-        time += 10
-        frame = cv2.resize(frame, (960, 540))
-
-        if ret == True:
-
-            ccl_labeled = ccl.labeling(frame.copy())
-            #cv2.imshow('labeled.png', frame)
-            #cv2.waitKey()
-            hough_contours = painting_detection.hough_contours(ccl_labeled, frame.copy())
-            contours, hierarchy = painting_detection.contours(ccl_labeled, adaptive=True)
-
-            if len(contours) != 0:
-
-                #painting_detection.draw_contours(frame, contours, approximate=False)
-                painting_detection.draw_contours(frame, contours, approximate=False)
-            cv2.imshow("Frame", frame)
-
-            # out.write(img3)
-            # Press Q on keyboard to  exit
-            if cv2.waitKey(25) & 0xFF == ord("q"):
-                break
-
-            # Break the loop
-        else:
-            break
-    # When everything done, release the video capture and writer objects
-    cap.release()
-    out.release()
-
-    # Closes all the frames
-    cv2.destroyAllWindows()
->>>>>>> 7dab25e2baef120f1c00a0f16a8ccf27f0096591
