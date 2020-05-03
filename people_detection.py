@@ -3,7 +3,6 @@ import cv2
 import torch.hub
 from torchvision import models
 import torchvision.transforms as transforms
-from PIL import Image
 import time
 
 
@@ -100,22 +99,42 @@ class DetectNet:
         return img
 
 
-net = DetectNet()
-cap = cv2.VideoCapture("videos/20180206_114604.MP4")
-
-while True:
-    ret, frame = cap.read()
-    image = frame.copy()
-
+def detection(frame=cv2.imread("paintings_db/064.png", cv2.IMREAD_COLOR)):
+    net = DetectNet()
     start = time.time()
-    net.detect(image)
+    net.detect(frame)
     end = time.time()
 
-    cv2.putText(image, '{:.2f}ms'.format((end - start) * 1000), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 0, 0),
+    cv2.putText(frame, '{:.2f}ms'.format((end - start) * 1000), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
+                (255, 0, 0),
                 2)
-
-    show(image)
+    show(frame)
     # cv2.imshow('People Detection', frame)
     print("FPS {:5.2f}".format(1 / (end - start)))
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    cv2.waitKey()
+
+# def detection(img):
+#     net = DetectNet()
+#     cap = cv2.VideoCapture("videos/20180206_114604.MP4")
+#
+#     while True:
+#         ret, frame = cap.read()
+#         image = frame.copy()
+#
+#         start = time.time()
+#         net.detect(image)
+#         end = time.time()
+#
+#         cv2.putText(image, '{:.2f}ms'.format((end - start) * 1000), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
+#                     (255, 0, 0),
+#                     2)
+#
+#         show(image)
+#         # cv2.imshow('People Detection', frame)
+#         print("FPS {:5.2f}".format(1 / (end - start)))
+#         if cv2.waitKey(1) & 0xFF == ord('q'):
+#             break
+#
+#
+# if __name__ == '__main__':
+#     detection()
