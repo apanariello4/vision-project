@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 # Create a VideoCapture object and read from input file
 # If the input is the camera, pass 0 instead of the video file name
-videolist = glob.glob('videos/V*.mp4')
+videolist = glob.glob('videos/2*.mp4')
 
 for video in videolist:
     cap = cv2.VideoCapture(video)
@@ -43,7 +43,8 @@ for video in videolist:
             contours, hierarchy = painting_detection.contours(ccl_labeled, adaptive=True)
 
             if len(contours) != 0:
-                painting_detection.draw_contours(frame, contours, approximate=False)
+                #painting_detection.draw_contours(frame, contours, approximate=False)
+                painting_detection.dram_multiple_contours(frame, contours, approximate=False)
             cv2.imshow("Frame", frame)
 
             # out.write(img3)

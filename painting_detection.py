@@ -3,7 +3,7 @@ import sys
 from cv2 import cv2
 import numpy as np
 import random as rng
-import skimage
+import utils
 
 def contours(img, adaptive=True):
 
@@ -97,3 +97,55 @@ def convex_hull(img):
         cv2.drawContours(drawing, contours, i, color)
         cv2.drawContours(drawing, hull_list, i, color)
     return drawing
+
+
+def overlap(a,b,elements):
+    for i in range(elements):
+        print("taci",i)
+        l1x = a[i][0]
+        l1y = a[i][1]
+        r1x = a[i][0] + a[i][2]
+        r1y = a[i][1] + a[i][3]
+
+        l2x = b[0]
+        l2y = b[1]
+        r2x = b[0] + b[2]
+        r2y = b[1] + b[3]
+
+
+        # If one rectangle is on left side of other
+        if (l1x >= r2x or l2x >= r1x):
+            return False
+
+        # If one rectangle is above other
+        if (l1y <= r2y or l2y <= r1y):
+            return False
+
+        return True
+
+
+def dram_multiple_contours(img, contours, max_contours = 10, approximate=False):
+    # draw in blue the contours that were founded
+    image_entropy = img.copy()
+    cv2.drawContours(img, contours, -1, 255, 3)
+
+    # find the biggest countour (c) by the area
+    c = sorted(contours,key=cv2.contourArea, reverse=True)
+
+    # draw the biggest contour (c) in green
+    overlap_area = np.zeros((max_contours,4))
+    for i in range(max_contours):
+        x, y, w, h = cv2.boundingRect(c[i])
+        utils.crop_image(img,(x,y,w,h))
+
+        entropy = utils.entropy(utils.histogram(utils.crop_image(image_entropy, (x, y, w, h))))
+        print(overlap_area)
+
+        if entropy > 0:
+            if not overlap(overlap_area,(x,y,w,h),i):
+
+                print(overlap(overlap_area, (x, y, w, h), i))
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+                print(x, y, w, h)
+                overlap_area[i,:] = x, y, w, h
