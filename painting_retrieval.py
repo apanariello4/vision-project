@@ -69,6 +69,7 @@ def show_match(img):
         cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
         cv2.imshow("Match", img)
         cv2.resizeWindow("Match", int(img.shape[1] / 2), int(img.shape[0] / 2))
+        cv2.waitKey()
     else:
         print("No match...")
 
@@ -182,70 +183,139 @@ def print_ranked_list(dictionary):
             break
 
 
-def retrieval():
+FRAME_NUMBER = 0
+
+
+def retrieval(frame):
     """
     For every video frame, it retrieves from paintings_db the painting with more keypoints matches
     """
     orb = cv2.ORB_create()
 
-    bf, cap, frame_number, (images_db, keypoints_db, descriptors_db) = cv2.BFMatcher(
-        cv2.NORM_HAMMING), cv2.VideoCapture(
-        "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=orb)
+    bf, frame_number, (images_db, keypoints_db, descriptors_db) = cv2.BFMatcher(
+        cv2.NORM_HAMMING), 0, load_keypoints(compute_and_write=False, matcher=orb)
 
     print("Starting painting retrieval")
     print("___________________________________")
-    while cap.isOpened():
-        start = time.time()
+    start = time.time()
 
-        matched_collage = np.array([])
-        good_global = 0
-        ret, frame = cap.read()
-        images_ranked_list = {}
-        cntrs, _ = contours(frame, adaptive=False)
-        frame_number += 1
+    matched_collage = np.array([])
+    good_global = 0
+    images_ranked_list = {}
+    cntrs, _ = contours(frame, adaptive=False)
+    global FRAME_NUMBER
+    FRAME_NUMBER += 1
 
-        print("\n############  FRAME N°" + str(frame_number) + "  ############")
-        if len(cntrs) != 0:
+    print("\n############  FRAME N°" + str(FRAME_NUMBER) + "  ############")
+    if len(cntrs) != 0:
 
-            img_frame = get_painting_from_roi(cntrs, frame)
+        img_frame = get_painting_from_roi(cntrs, frame)
 
-            kp_frame, desc_frame = orb.detectAndCompute(img_frame, None)
+        kp_frame, desc_frame = orb.detectAndCompute(img_frame, None)
 
-            for file in glob.glob("paintings_db/*.png"):
+        for file in glob.glob("paintings_db/*.png"):
 
-                matches = bf.knnMatch(desc_frame, descriptors_db[file], k=2)
+            matches = bf.knnMatch(desc_frame, descriptors_db[file], k=2)
 
-                good = get_good_matches(matches)
+            good = get_good_matches(matches)
 
-                collage = cv2.drawMatchesKnn(
-                    img_frame,
-                    kp_frame,
-                    images_db[file],
-                    keypoints_db[file],
-                    good,
-                    None,
-                    flags=2,
-                )
+            collage = cv2.drawMatchesKnn(
+                img_frame,
+                kp_frame,
+                images_db[file],
+                keypoints_db[file],
+                good,
+                None,
+                flags=2,
+            )
 
-                images_ranked_list[file] = np.asarray(good).shape[0]
-                if int(images_ranked_list[file]) > int(good_global):
-                    good_global = images_ranked_list[file]
-                    matched_collage = collage
+            images_ranked_list[file] = np.asarray(good).shape[0]
+            if int(images_ranked_list[file]) > int(good_global):
+                good_global = images_ranked_list[file]
+                matched_collage = collage
 
-                check_match(collage)
-                if cv2.waitKey(10) & 0xFF == ord("q"):
-                    break
+            check_match(collage)
+            if cv2.waitKey(10) & 0xFF == ord("q"):
+                break
 
-            end = time.time()
-            print("Time to search the matched image: " + "%.2f" % (
-                    end - start) + " seconds")
-            show_match(matched_collage)
+        end = time.time()
+        print("Time to search the matched image: " + "%.2f" % (
+                end - start) + " seconds")
+        show_match(matched_collage)
 
-            if matched_collage.size != 0:
-                print(max(images_ranked_list, key=images_ranked_list.get))
-                print_ranked_list(images_ranked_list)
-            print("#####################################")
+        if matched_collage.size != 0:
+            print(max(images_ranked_list, key=images_ranked_list.get))
+            print_ranked_list(images_ranked_list)
+        print("#####################################")
+
+# if __name__ == '__main__':
+#     retrieval()
 
 
-if __name__ == '__main__':
-    retrieval()
+############ OLD #############
+
+# def retrieval():
+#     """
+#     For every video frame, it retrieves from paintings_db the painting with more keypoints matches
+#     """
+#     orb = cv2.ORB_create()
+#
+#     bf, cap, frame_number, (images_db, keypoints_db, descriptors_db) = cv2.BFMatcher(
+#         cv2.NORM_HAMMING), cv2.VideoCapture(
+#         "videos/VIRB0392.mp4"), 0, load_keypoints(compute_and_write=False, matcher=orb)
+#
+#     print("Starting painting retrieval")
+#     print("___________________________________")
+#     while cap.isOpened():
+#         start = time.time()
+#
+#         matched_collage = np.array([])
+#         good_global = 0
+#         ret, frame = cap.read()
+#         images_ranked_list = {}
+#         cntrs, _ = contours(frame, adaptive=False)
+#         frame_number += 1
+#
+#         print("\n############  FRAME N°" + str(frame_number) + "  ############")
+#         if len(cntrs) != 0:
+#
+#             img_frame = get_painting_from_roi(cntrs, frame)
+#
+#             kp_frame, desc_frame = orb.detectAndCompute(img_frame, None)
+#
+#             for file in glob.glob("paintings_db/*.png"):
+#
+#                 matches = bf.knnMatch(desc_frame, descriptors_db[file], k=2)
+#
+#                 good = get_good_matches(matches)
+#
+#                 collage = cv2.drawMatchesKnn(
+#                     img_frame,
+#                     kp_frame,
+#                     images_db[file],
+#                     keypoints_db[file],
+#                     good,
+#                     None,
+#                     flags=2,
+#                 )
+#
+#                 images_ranked_list[file] = np.asarray(good).shape[0]
+#                 if int(images_ranked_list[file]) > int(good_global):
+#                     good_global = images_ranked_list[file]
+#                     matched_collage = collage
+#
+#                 check_match(collage)
+#                 if cv2.waitKey(10) & 0xFF == ord("q"):
+#                     break
+#
+#             end = time.time()
+#             print("Time to search the matched image: " + "%.2f" % (
+#                     end - start) + " seconds")
+#             show_match(matched_collage)
+#
+#             if matched_collage.size != 0:
+#                 print(max(images_ranked_list, key=images_ranked_list.get))
+#                 print_ranked_list(images_ranked_list)
+#             print("#####################################")
+#
+#

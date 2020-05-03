@@ -4,8 +4,8 @@ import time
 import cv2
 import sys
 import torch
-from darknet_yolo.models.darknet_pytorch import Darknet
-from darknet_yolo.p_utils.detection_boxes_pytorch import DetectBoxes
+from darknet_yolo.darknet_pytorch import Darknet
+from darknet_yolo.detection_boxes_pytorch import DetectBoxes
 
 
 def show(img):
