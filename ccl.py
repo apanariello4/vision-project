@@ -26,7 +26,7 @@ def labeling(img):
     gray = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 13, 3)  # 11,2 at the beginning
     gray = cv2.medianBlur(gray, 5)
-    gray = erosion_dilation(gray)
+    # gray = erosion_dilation(gray)
 
     num_labels, labeled_img = cv2.connectedComponentsWithAlgorithm(
         gray, connectivity=8, ltype=cv2.CV_32S, ccltype=cv2.CCL_GRANA)
@@ -52,7 +52,6 @@ def labeling(img):
 
         intermediate_global_mask = np.clip(
             intermediate_global_mask + hull_mask, 0, 255)
-        cv2.imshow("", hull_mask)
     return labeled_img
 
 

@@ -8,8 +8,8 @@ import painting_detection
 from ccl import *
 from htrdc import HTRDC, undistort
 from painting_retrieval import retrieval
-
-# from people_detection import detection
+from people_detection import detection
+from utils import resize_when_too_big
 
 HTRDC_K_START = 0.0
 HTRDC_K_END = 1e-4
@@ -64,8 +64,9 @@ def main():
             if len(contours) != 0:
                 painting_detection.draw_contours(
                     frame.copy(), contours, approximate=False)
-            # img = resize_when_too_big(frame, (720, 405))
-            components = labeling(frame)
+
+            img = resize_when_too_big(frame, (720, 405))
+            components = labeling(img)
             drawn_components = draw_components(components)
 
             painting_detection.draw_contours(
