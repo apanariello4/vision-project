@@ -5,8 +5,9 @@ import numpy as np
 from cv2 import cv2
 
 import painting_detection
-# import painting_retrieval
+from painting_retrieval import retrieval
 from htrdc import HTRDC, undistort
+# from people_detection import detection
 
 HTRDC_K_START = 0.0
 HTRDC_K_END = 1e-4
@@ -62,7 +63,7 @@ def main():
             #     painting_detection.draw_contours(
             #         frame.copy(), contours, approximate=False)
             # # img = resize_when_too_big(frame, (720, 405))
-
+            detection()
             cv2.imshow("Frame", frame)
 
             # out.write(img3)
