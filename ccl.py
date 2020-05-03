@@ -26,9 +26,6 @@ def erosion_dilation(img):
     return img_erosion
 
 
-
-
-
 def labeling(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     #thresh = cv2.threshold(gray, 110, 255, cv2.THRESH_BINARY)[1]

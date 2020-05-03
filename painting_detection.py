@@ -18,7 +18,7 @@ def contours(img, adaptive=True):
             grayscale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 3, 2
         )
 
-    #exit = convex_hull(thresh)
+    exit = convex_hull(thresh)
 
     # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25,25))
     # opening = cv2.morpholfirst_frameyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=3)
@@ -28,7 +28,7 @@ def contours(img, adaptive=True):
     return cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 def convex_hull(img):
-    canny_output = cv2.Canny(img, 150, 220 * 2)
+    canny_output = cv2.Canny(img, 150, 250)
     contours, _ = cv2.findContours(canny_output, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     hull_list = []
     for i in range(len(contours)):
@@ -41,10 +41,11 @@ def convex_hull(img):
         color = (rng.randint(0, 256), rng.randint(0, 256), rng.randint(0, 256))
         cv2.drawContours(drawing, contours, i, color)
         cv2.drawContours(drawing, hull_list, i, color)
+        cv2.imshow("f", drawing)
     return drawing
 
 
-def hough_contours(img,frame):
+def hough_contours(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 50, 150)
     lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, np.array([]), 50, 5)
@@ -52,7 +53,7 @@ def hough_contours(img,frame):
 
     for line in lines:
         for x1, y1, x2, y2 in line:
-            cv2.line(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
     return img
 
 def draw_contours(img, contours, approximate=False):
