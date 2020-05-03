@@ -56,7 +56,8 @@ def check_match(img):
     """
     cv2.namedWindow("Checking...", cv2.WINDOW_KEEPRATIO)
     cv2.imshow("Checking...", img)
-    cv2.resizeWindow("Checking...", int(img.shape[1] / 2), int(img.shape[0] / 2))
+    cv2.resizeWindow("Checking...", int(
+        img.shape[1] / 2), int(img.shape[0] / 2))
 
 
 def show_match(img):
@@ -91,7 +92,8 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
 
     for file in glob.glob("paintings_db/*.png"):
         images[file] = cv2.imread(file, cv2.IMREAD_COLOR)
-        keypoints[file], descriptors[file] = matcher.detectAndCompute(images[file], None)
+        keypoints[file], descriptors[file] = matcher.detectAndCompute(
+            images[file], None)
         index = []
         for point in keypoints[file]:
             temp = (point.pt, point.size, point.angle, point.response, point.octave,
@@ -106,7 +108,8 @@ def compute_and_write_kp(matcher=cv2.ORB_create()):
     desc_out.close()
     end = time.time()
 
-    print("[COMPUTING MODE] Loading time: " + "%.2f" % (end - start) + " seconds")
+    print("[COMPUTING MODE] Loading time: " + "%.2f" %
+          (end - start) + " seconds")
 
     return images, keypoints, descriptors
 
@@ -150,7 +153,8 @@ def load_keypoints(compute_and_write=False, matcher=cv2.ORB_create()):
             kp.append(temp)
         keypoints[file] = kp
     end = time.time()
-    print("[LOADING MODE] Loading time: " + "%.2f" % (end - start) + " seconds")
+    print("[LOADING MODE] Loading time: " + "%.2f" %
+          (end - start) + " seconds")
 
     return images, keypoints, descriptors
 
@@ -238,7 +242,7 @@ def retrieval():
 
             end = time.time()
             print("Time to search the matched image: " + "%.2f" % (
-                    end - start) + " seconds")
+                end - start) + " seconds")
             show_match(matched_collage)
 
             if matched_collage.size != 0:
