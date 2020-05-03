@@ -98,20 +98,18 @@ class DetectNet:
         img = process(img)
         return img
 
+    def detection(self, frame=cv2.imread("paintings_db/064.png", cv2.IMREAD_COLOR)):
+        start = time.time()
+        self.detect(frame)
+        end = time.time()
 
-def detection(frame=cv2.imread("paintings_db/064.png", cv2.IMREAD_COLOR)):
-    net = DetectNet()
-    start = time.time()
-    net.detect(frame)
-    end = time.time()
-
-    cv2.putText(frame, '{:.2f}ms'.format((end - start) * 1000), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
-                (255, 0, 0),
-                2)
-    show(frame)
-    # cv2.imshow('People Detection', frame)
-    print("FPS {:5.2f}".format(1 / (end - start)))
-    cv2.waitKey()
+        cv2.putText(frame, '{:.2f}ms'.format((end - start) * 1000), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
+                    (255, 0, 0),
+                    2)
+        show(frame)
+        # cv2.imshow('People Detection', frame)
+        print("FPS {:5.2f}".format(1 / (end - start)))
+        cv2.waitKey()
 
 # def detection(img):
 #     net = DetectNet()

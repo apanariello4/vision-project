@@ -3,7 +3,7 @@ import sys
 import numpy as np
 # sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
 from cv2 import cv2
-
+from people_detection import DetectNet
 import painting_detection
 from ccl import *
 from htrdc import HTRDC, undistort
@@ -18,7 +18,6 @@ HTRDC_EPSILON = 1e-6
 
 
 def compute_HTRDC(img):
-
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (3, 3), 15)
     canny = painting_detection.auto_canny(gray)
@@ -49,7 +48,7 @@ def main():
     # Check if camera opened successfully
     if cap.isOpened() == False:
         print("Error opening video stream or file")
-
+    detect = Darknet()
     # Read until video is completed
     while cap.isOpened():
 
