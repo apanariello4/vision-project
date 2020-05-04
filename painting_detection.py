@@ -1,17 +1,26 @@
 import sys
 # sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
-from cv2 import cv2
+
 import numpy as np
+from cv2 import cv2
 import random as rng
 import utils
 
 def contours(img, adaptive=True):
+    """
+    Finds contours given an img
+
+    :param img: image
+    :return contours: contours of the image
+    :return hierarchy:
+    """
 
     blur = cv2.medianBlur(img, 5)
     grayscale = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
 
     if adaptive is False:
-        _, thresh = cv2.threshold(grayscale, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        _, thresh = cv2.threshold(
+            grayscale, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     else:
         thresh = cv2.adaptiveThreshold(
             grayscale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 3, 2
@@ -20,23 +29,40 @@ def contours(img, adaptive=True):
     # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25,25))
     # opening = cv2.morpholfirst_frameyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=3)
 
-    return cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(
+        thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    return contours, hierarchy
 
 
 def hough_contours(img):
+    """
+    Finds contours with Probabilistic Hough Lines
+    Lines are drawn on the image
+
+    :param img: Image
+    :return: img with lines drawn
+    """
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray, 50, 150)
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, np.array([]), 50, 5)
+    edges = auto_canny(gray)
+    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 100, np.array([]), 50, 5)
+
 
     for line in lines:
         for x1, y1, x2, y2 in line:
-            cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            cv2.line(img, (x1, y1), (x2, y2), (20, 220, 20), 2)
     return img
 
 
 def draw_contours(img, contours, approximate=False):
+    """
+    Draw the contours on the image
+    :param img: image on which to draw
+    :param contours: contours to be drawn
+    :param approximate: choose to approximate or not the contours
+    :return: img with contours drawn
+    """
     # draw in blue the contours that were founded
-    cv2.drawContours(img, contours, -1, 255, 3)
+    # cv2.drawContours(img, contours, -1, 255, 3)
 
     # find the biggest countour (c) by the area
     c = max(contours, key=cv2.contourArea)
@@ -54,6 +80,11 @@ def draw_contours(img, contours, approximate=False):
 
 
 def detect_corners(img):
+    """
+    Finds corners of the image with Corner Harris
+    :param img: img in which to find corners
+    :return: img with corners drawn
+    """
     blur = cv2.medianBlur(img, 5)
     gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
     gray = np.float32(gray)
