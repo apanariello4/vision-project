@@ -65,6 +65,8 @@ def entropy(hist):
 
 
 def crop_image(img, coordinates):
+    """
+    """
     x,y,w,h = coordinates
     crop_img = img[y:y + h, x:x + w]
     cv2.imshow("crop",crop_img)

@@ -3,7 +3,6 @@ import sys
 
 import numpy as np
 from cv2 import cv2
-import random as rng
 import utils
 
 def contours(img, adaptive=True):
@@ -113,26 +112,9 @@ def auto_canny(image, sigma=0.33):
     return edged
 
 
-def convex_hull(img):
-    canny_output = cv2.Canny(img, 150, 250)
-    contours, _ = cv2.findContours(canny_output, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    hull_list = []
-    for i in range(len(contours)):
-        hull = cv2.convexHull(contours[i])
-        hull_list.append(hull)
-    # Draw contours + hull results
-    drawing = np.zeros((canny_output.shape[0], canny_output.shape[1], 3), dtype=np.uint8)
-
-    for i in range(len(contours)):
-        color = (rng.randint(0, 256), rng.randint(0, 256), rng.randint(0, 256))
-        cv2.drawContours(drawing, contours, i, color)
-        cv2.drawContours(drawing, hull_list, i, color)
-    return drawing
-
-
 def overlap(a,b,elements):
     for i in range(elements):
-        print("taci",i)
+
         l1x = a[i][0]
         l1y = a[i][1]
         r1x = a[i][0] + a[i][2]
@@ -151,7 +133,6 @@ def overlap(a,b,elements):
         # If one rectangle is above other
         if (l1y <= r2y or l2y <= r1y):
             return False
-
         return True
 
 
