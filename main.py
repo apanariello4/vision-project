@@ -7,8 +7,8 @@ from people_detection import DetectNet
 import painting_detection
 from ccl import *
 from htrdc import HTRDC, undistort
-from painting_retrieval import retrieval
-from people_detection import detection
+#from painting_retrieval import retrieval
+#from people_detection import detection
 from utils import resize_when_too_big
 
 HTRDC_K_START = 0.0
@@ -17,7 +17,7 @@ HTRDC_N = 20
 HTRDC_EPSILON = 1e-6
 
 
-def compute_HTRDC(img):
+def compute_HTRDC(img, k):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (3, 3), 15)
     canny = painting_detection.auto_canny(gray)
@@ -48,7 +48,7 @@ def main():
     # Check if camera opened successfully
     if cap.isOpened() == False:
         print("Error opening video stream or file")
-    detect = Darknet()
+   # detect = Darknet()
     # Read until video is completed
     while cap.isOpened():
 

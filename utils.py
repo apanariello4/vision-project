@@ -40,7 +40,21 @@ def resize_when_too_big(img, threshold_w_h):
 def histogram(img):
     """
     """
-    pass
+    nbin = 255
+    color_histogram = []
+
+    for c in range(3):
+        histogram = np.zeros((nbin,))
+        for row in range(img.shape[1]):
+            for col in range(img.shape[2]):
+                pixel = img[c, row, col]
+                bin = pixel * nbin // 256
+                histogram[bin] += 1
+
+        color_histogram = np.concatenate((color_histogram, histogram))
+    color_histogram = color_histogram / np.sum(color_histogram)
+
+    return color_histogram
 
 
 def entropy(hist):
@@ -48,3 +62,12 @@ def entropy(hist):
     """
     hist = hist[hist > 0]
     return -np.sum(hist * np.log2(hist))
+
+
+def crop_image(img, coordinates):
+    """
+    """
+    x,y,w,h = coordinates
+    crop_img = img[y:y + h, x:x + w]
+    cv2.imshow("crop",crop_img)
+    return crop_img
