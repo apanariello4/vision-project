@@ -16,7 +16,7 @@ HTRDC_N = 20
 HTRDC_EPSILON = 1e-6
 
 
-def compute_HTRDC(img):
+def compute_HTRDC(img, k):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (3, 3), 15)
     canny = painting_detection.auto_canny(gray)
