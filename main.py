@@ -7,9 +7,8 @@ from people_detection import DetectNet
 import painting_detection
 from ccl import *
 from htrdc import HTRDC, undistort
-from painting_retrieval import retrieval
-from people_detection import detection
 from utils import resize_when_too_big
+from darknet_yolo.darknet_pytorch import Darknet
 
 HTRDC_K_START = 0.0
 HTRDC_K_END = 1e-4
@@ -45,17 +44,19 @@ def main():
     first_frame_flag = True
     k = None
 
+    net = Darknet()
+
     # Check if camera opened successfully
     if cap.isOpened() == False:
         print("Error opening video stream or file")
-    detect = Darknet()
+
     # Read until video is completed
     while cap.isOpened():
 
         ret, frame = cap.read()
 
         if ret == True:
-
+            net.yolo_detection(frame)
             hough_contours = painting_detection.hough_contours(frame.copy())
             contours, hierarchy = painting_detection.contours(
                 frame.copy(), adaptive=False)
