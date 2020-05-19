@@ -14,5 +14,3 @@ old_main.py
 resources/keypoints_db
 resources/descriptors_db
 .vscode
-resources/keypoints_db
-resources/descriptors_db
