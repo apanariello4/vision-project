@@ -94,8 +94,8 @@ class RetrieveClass:
         keypoints = {}
         descriptors = {}
         kp_temp = {}
-        kp_out = open("keypoints_db", "wb")
-        desc_out = open("descriptors_db", "wb")
+        kp_out = open("resources/keypoints_db", "wb")
+        desc_out = open("resources/descriptors_db", "wb")
 
         for file in glob.glob("paintings_db/*.png"):
             images[file] = cv2.imread(file, cv2.IMREAD_COLOR)
@@ -134,11 +134,11 @@ class RetrieveClass:
 
         print("Reading files...", end="", flush=True)
 
-        if os.path.exists('descriptors_db') and os.path.exists('keypoints_db'):
+        if os.path.exists('resources/descriptors_db') and os.path.exists('resources/keypoints_db'):
             print("[Files found]")
-            with open('descriptors_db', 'rb') as f1:
+            with open('resources/descriptors_db', 'rb') as f1:
                 descriptors = pickle.load(f1)
-            with open('keypoints_db', 'rb') as f2:
+            with open('resources/keypoints_db', 'rb') as f2:
                 kp_db = pickle.load(f2)
         else:
             print("[Files not found, passing to computing mode...]")
@@ -232,7 +232,7 @@ class RetrieveClass:
                 print(max(images_ranked_list, key=images_ranked_list.get))
                 self.print_ranked_list(images_ranked_list)
             print("#####################################")
-
+            return images_ranked_list
 ############ OLD #############
 
 # def retrieval():
