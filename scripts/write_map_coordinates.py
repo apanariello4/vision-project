@@ -1,7 +1,5 @@
 import json
 
-import json
-
 coordinates = {
     1: [938, 409, 1031, 601],
     2: [938, 611, 1031, 701],
