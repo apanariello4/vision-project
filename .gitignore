@@ -5,11 +5,12 @@ paintings_db
 /.vscode/
 __pycache__
 darknet_yolo/weights
+yolov4
 darknet
 output.avi
 output.mp4
 test.py
 old_main.py
-keypoints_db
-descriptors_db
+resources/keypoints_db
+resources/descriptors_db
 .vscode
