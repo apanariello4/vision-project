@@ -1,7 +1,9 @@
+wheel
 numpy
 matplotlib
 opencv-python
 torch
 torchvision
 scikit-image
+pandas
 tqdm
