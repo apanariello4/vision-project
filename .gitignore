@@ -11,6 +11,7 @@ output.avi
 output.mp4
 test.py
 old_main.py
-resources/keypoints_db
-resources/descriptors_db
+keypoints_db
+descriptors_db
 .vscode
+mainfab.py
