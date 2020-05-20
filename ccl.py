@@ -20,39 +20,26 @@ def draw_components(labels):
     return labeled_img
 
 
-def labeling(img):
+def image_segmentation(img):
+    """
+    """
+    blur = cv2.GaussianBlur(img, (5, 5), 0)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    gray = cv2.GaussianBlur(gray, ksize=(5, 5), sigmaX=10)
+    gray = cv2.bilateralFilter(gray, d=7, sigmaColor=75, sigmaSpace=75)
+    gray = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, (7, 7), iterations=2)
 
     gray = cv2.adaptiveThreshold(
         gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 13, 3)  # 11,2 at the beginning
-    gray = cv2.medianBlur(gray, 5)
+
+    cv2.imshow("Thresh", gray)
     # gray = erosion_dilation(gray)
 
-    num_labels, labeled_img = cv2.connectedComponentsWithAlgorithm(
+    num_labels, labeled_img, stats, centroids = cv2.connectedComponentsWithStatsWithAlgorithm(
         gray, connectivity=8, ltype=cv2.CV_32S, ccltype=cv2.CCL_GRANA)
 
-    labels = np.unique(labeled_img)
-    labels = labels[labels != 0]
-
-    intermediate_global_mask = np.array(labeled_img, dtype=np.uint8)
-    for label in labels:
-        mask = np.array(labeled_img, dtype=np.uint8)
-        mask[labeled_img == label] = 255
-
-        # Compute the convex hull
-        contours, _ = cv2.findContours(
-            mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-        hull = []
-        for cnt in contours:
-            hull.append(cv2.convexHull(cnt, False))
-        hull_mask = np.zeros(mask.shape, dtype=np.uint8)
-        for i in range(len(contours)):
-            hull_mask = cv2.drawContours(hull_mask, hull, i, 100, -1, 8)
-
-        intermediate_global_mask = np.clip(
-            intermediate_global_mask + hull_mask, 0, 255)
-    return labeled_img
+    return labeled_img, stats
 
 
 def get_rois(img, gray_img):
