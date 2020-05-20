@@ -74,6 +74,7 @@ class RetrieveClass:
             :param img: image to show on screen
         """
         if img.size != 0:
+            cv2.destroyWindow('Checking...')
             print("Match found: ", end="", flush=True)
             cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
             cv2.imshow("Match", img)
@@ -114,7 +115,7 @@ class RetrieveClass:
         desc_out.close()
         end = time.time()
 
-        print("[COMPUTING MODE] Loading time: " + "%.2f" % (end - start) + " seconds")
+        print("[COMPUTING] Loading time: " + "%.2f" % (end - start) + " seconds")
 
         return images, keypoints, descriptors
 
@@ -129,10 +130,10 @@ class RetrieveClass:
         """
         print("___________________________________")
         if compute_and_write:
-            print("[Compute_and_write TRUE, switching to computing mode...]")
+            print("[Compute_and_write TRUE, switching to computing mode]")
             return self.compute_and_write_kp(matcher=matcher)
 
-        print("Reading files...", end="", flush=True)
+        print("Searching for keypoints and descriptors...", end="", flush=True)
 
         if os.path.exists('resources/descriptors_db') and os.path.exists('resources/keypoints_db'):
             print("[Files found]")
@@ -141,7 +142,7 @@ class RetrieveClass:
             with open('resources/keypoints_db', 'rb') as f2:
                 kp_db = pickle.load(f2)
         else:
-            print("[Files not found, passing to computing mode...]")
+            print("[Files not found, passing to computing mode]")
             return self.compute_and_write_kp(matcher=matcher)
         start = time.time()
         images = {}
@@ -157,13 +158,13 @@ class RetrieveClass:
                 kp.append(temp)
             keypoints[file] = kp
         end = time.time()
-        print("[LOADING MODE] Loading time: " + "%.2f" % (end - start) + " seconds")
+        print("[LOADING] Loading time: " + "%.2f" % (end - start) + " seconds")
 
         return images, keypoints, descriptors
 
     def print_ranked_list(self, dictionary):
         """
-        It prints on command line a sorted list of matches number between the actual frame and the paintings_db from database
+        It prints on command line a sorted dictionary of matches number between the actual frame and the paintings_db from database
             :param dictionary: unsorted list of matches number
         """
         ranked_list = {
@@ -179,7 +180,7 @@ class RetrieveClass:
                 print("...")
                 break
 
-    def retrieval(self, frame):
+    def retrieve(self, frame):
         """
         For every video frame, it retrieves from paintings_db the painting with more keypoints matches
         """
