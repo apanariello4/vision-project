@@ -46,7 +46,7 @@ class RetrieveClass:
         extracted_painting = img[y: y + h, x: x + w]
         return extracted_painting
 
-    def get_good_matches(self, matches, thresh=0.4):
+    def get_good_matches(self, matches, thresh=0.6):
         """
         Computes the best matches of 2 paintings_db that exceed a certain threshold
             :param matches: matches from 2 paintings_db
