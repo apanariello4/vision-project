@@ -20,11 +20,11 @@ class DetectBoxes:
         self.nmsThreshold = nms_threshold
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    def bounding_box_yolo(self, frame, inp_dim, model):
+    def bounding_box_yolo(self, frame, inp_dim, model, draw_rois=False):
         img, orig_im, dim = prep_image(frame, inp_dim)
         im_dim = torch.FloatTensor(dim).repeat(1, 2).to(self.device)
         img = img.to(self.device)
-
+        detections_list = []
         input_imgs = Variable(img)
 
         with torch.no_grad():
@@ -50,10 +50,13 @@ class DetectBoxes:
 
                 cls = int(outs[-1])
                 color = STANDARD_COLORS[(cls + 1) % len(STANDARD_COLORS)]
+                detections_list.append([self.classes[cls + 1], outs[4], left, top, right, bottom, color])
+                if draw_rois:
+                    self.draw_boxes(frame, self.classes[cls + 1], outs[4], left, top, right, bottom, color)
+        return detections_list
 
-                self.draw_boxes(frame, self.classes[cls + 1], outs[4], left, top, right, bottom, color)
+        # detect bounding boxes rcnn
 
-    # detect bounding boxes rcnn
     def bounding_box_rcnn(self, frame, model):
         # Image is converted to image Tensor
         transform = transforms.Compose([transforms.ToTensor()])
