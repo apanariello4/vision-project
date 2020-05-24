@@ -180,60 +180,64 @@ class RetrieveClass:
                 print("...")
                 break
 
-    def retrieve(self, frame):
-        """
-        For every video frame, it retrieves from paintings_db the painting with more keypoints matches
-        """
+    def retrieve(self, painting_roi):
+        '''
+        Given a frame, it retrieves from paintings_db the painting with more keypoints matches
+        :param frame: the frame used for the retrieval
+        :return: dictionary of matches for every painting in paintings_db
+        '''
         start = time.time()
 
         matched_collage = np.array([])
         good_global = 0
         images_ranked_list = {}
-        cntrs, _ = contours(frame, adaptive=False)
         self.frame_number += 1
+        kp_coordinates_frame = []
+        kp_coordinates_best_match = []
 
         print("\n############  FRAME N°" + str(self.frame_number) + "  ############")
-        if len(cntrs) != 0:
 
-            img_frame = self.get_painting_from_roi(cntrs, frame)
+        kp_frame, desc_frame = self.orb.detectAndCompute(painting_roi, None)
 
-            kp_frame, desc_frame = self.orb.detectAndCompute(img_frame, None)
+        for file in glob.glob("paintings_db/*.png"):
 
-            for file in glob.glob("paintings_db/*.png"):
+            matches = self.bf.knnMatch(desc_frame, self.descriptors_db[file], k=2)
 
-                matches = self.bf.knnMatch(desc_frame, self.descriptors_db[file], k=2)
+            good = self.get_good_matches(matches)
 
-                good = self.get_good_matches(matches)
+            collage = cv2.drawMatchesKnn(
+                painting_roi,
+                kp_frame,
+                self.images_db[file],
+                self.keypoints_db[file],
+                good,
+                None,
+                flags=2,
+            )
 
-                collage = cv2.drawMatchesKnn(
-                    img_frame,
-                    kp_frame,
-                    self.images_db[file],
-                    self.keypoints_db[file],
-                    good,
-                    None,
-                    flags=2,
-                )
+            images_ranked_list[file] = np.asarray(good).shape[0]
+            if int(images_ranked_list[file]) > int(good_global):
+                good_global = images_ranked_list[file]
+                matched_collage = collage
+                kp_coordinates_frame = np.float32([kp_frame[m[0].queryIdx].pt for m in good]).reshape(-1, 1, 2)
+                kp_coordinates_best_match = np.float32(
+                    [self.keypoints_db[file][m[0].trainIdx].pt for m in good]).reshape(
+                    -1, 1, 2)
+            self.check_match(collage)
+            if cv2.waitKey(10) & 0xFF == ord("q"):
+                break
 
-                images_ranked_list[file] = np.asarray(good).shape[0]
-                if int(images_ranked_list[file]) > int(good_global):
-                    good_global = images_ranked_list[file]
-                    matched_collage = collage
+        end = time.time()
+        print("Time to search the matched image: " + "%.2f" % (
+                end - start) + " seconds")
+        self.show_match(matched_collage)
 
-                self.check_match(collage)
-                if cv2.waitKey(10) & 0xFF == ord("q"):
-                    break
+        if matched_collage.size != 0:
+            print(max(images_ranked_list, key=images_ranked_list.get))
+            self.print_ranked_list(images_ranked_list)
+        print("#####################################")
+        return images_ranked_list, kp_coordinates_best_match, kp_coordinates_frame
 
-            end = time.time()
-            print("Time to search the matched image: " + "%.2f" % (
-                    end - start) + " seconds")
-            self.show_match(matched_collage)
-
-            if matched_collage.size != 0:
-                print(max(images_ranked_list, key=images_ranked_list.get))
-                self.print_ranked_list(images_ranked_list)
-            print("#####################################")
-            return images_ranked_list
 ############ OLD #############
 
 # def retrieval():

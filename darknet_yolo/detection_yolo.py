@@ -45,12 +45,12 @@ def detection(frame=cv2.imread("paintings_db/064.png", cv2.IMREAD_COLOR)):
 
     print("Loading network.....")
     model = Darknet("darknet_yolo/cfg/yolov3.cfg", img_size=resolution).to(device)
-    model.load_darknet_weights("darknet_yolo/weights/yolov3.weights")
+    model.load_darknet_weights("darknet_yolo/weights/yolov3-custom.weights")
     print("Network successfully loaded")
 
     model.eval()
 
-    PATH_TO_LABELS = 'darknet_yolo/p_utils/coco.names'
+    PATH_TO_LABELS = 'darknet_yolo/p_utils/obj.names'
 
     # load detection class, default confidence threshold is 0.5
     detect = DetectBoxes(PATH_TO_LABELS, conf_threshold=confidence, nms_threshold=nmsTreshold)
