@@ -44,7 +44,7 @@ def main():
     first_frame_flag = True
     k = None
 
-    # net = Darknet()
+    net = Darknet()
 
     # Check if camera opened successfully
     if cap.isOpened() == False:
@@ -56,7 +56,7 @@ def main():
         ret, frame = cap.read()
 
         if ret == True:
-           # net.yolo_detection(frame)
+            net.yolo_detection(frame)
             # img = resize_when_too_big(frame, (720, 405))
             # img = erosion_dilation(img)
             # contours, hierarchy = painting_detection.contours(
@@ -67,20 +67,20 @@ def main():
             #         img, contours, approximate=False)
 
             # img2 = resize_when_too_big(frame, (720, 405))
-            img2 = frame.copy()
+            #  #img2 = frame.copy()
 
-            img_equalized = equalize_luma(img2)
-            contours, hierarchy = painting_detection.contours(
-                img_equalized, adaptive=True)
-            if len(contours) != 0:
-                painting_detection.draw_biggest_roi(
-                    img_equalized, contours, approximate=False)
+            #   # img_equalized = equalize_luma(img2)
+            #   contours, hierarchy = painting_detection.contours(
+            #        img2, adaptive=True)
+            #    if len(contours) != 0:
+            #         painting_detection.draw_biggest_roi(
+            #             img2, contours, approximate=False)
 
-            # components, stats = image_segmentation(img_equalized)
-            # drawn_components = draw_components(components)
-            #painting_detection.draw_ccl_rois(img2, stats)
+            #     # components, stats = image_segmentation(img_equalized)
+            #     # drawn_components = draw_components(components)
+            #     #painting_detection.draw_ccl_rois(img2, stats)
 
-            cv2.imshow("Frame", img_equalized)
+            #     cv2.imshow("Frame", img2)
 
             # out.write(img3)
             # Press Q on keyboard to  exit
