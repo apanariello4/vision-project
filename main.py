@@ -1,14 +1,16 @@
 import sys
 
 import numpy as np
-# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
 from cv2 import cv2
-from people_detection import DetectNet
+
 import painting_detection
-from ccl import image_segmentation, draw_components
-from htrdc import HTRDC, undistort
-from utils import resize_when_too_big, equalize_luma
+from ccl import draw_components, image_segmentation
 from darknet_yolo.darknet_pytorch import Darknet
+from htrdc import HTRDC, undistort
+from people_detection import DetectNet
+from painting_rectification import RectifyClass
+from painting_retrieval import RetrieveClass
+from utils import resize_when_too_big, is_painting_outside_frame
 
 HTRDC_K_START = 0.0
 HTRDC_K_END = 1e-4
@@ -32,7 +34,7 @@ def compute_HTRDC(img, k):
 def main():
     # Create a VideoCapture object and read from input file
     # If the input is the camera, pass 0 instead of the video file name
-    cap = cv2.VideoCapture("videos/VIRB0416.MP4")
+    cap = cv2.VideoCapture("videos/VIRB0392.MP4")
     # cap = cv2.VideoCapture("videos/GOPR5819.MP4")
 
     frame_width = int(cap.get(3))
@@ -44,7 +46,9 @@ def main():
     first_frame_flag = True
     k = None
 
-    net = Darknet()
+    detect = Darknet()
+    retrieve = RetrieveClass()
+    rectify = RectifyClass(retrieve)
 
     # Check if camera opened successfully
     if cap.isOpened() == False:
@@ -56,30 +60,22 @@ def main():
         ret, frame = cap.read()
 
         if ret == True:
-            net.yolo_detection(frame)
-            # img = resize_when_too_big(frame, (720, 405))
-            # img = erosion_dilation(img)
-            # contours, hierarchy = painting_detection.contours(
-            #     img, adaptive=True)
+            detection_list = detect.yolo_detection(frame, draw=False)
 
-            # if len(contours) != 0:
-            #     painting_detection.draw_contours(
-            #         img, contours, approximate=False)
+            for detection in detection_list:
+                if detection[0] == 'painting' and not is_painting_outside_frame(
+                        frame_width, frame_height, *detection[2:6]):
 
-            # img2 = resize_when_too_big(frame, (720, 405))
-            #  #img2 = frame.copy()
+                    left = detection[2]  # x
+                    top = detection[3]  # y
+                    right = detection[4]  # x + w
+                    bottom = detection[5]  # y + h
 
-            #   # img_equalized = equalize_luma(img2)
-            #   contours, hierarchy = painting_detection.contours(
-            #        img2, adaptive=True)
-            #    if len(contours) != 0:
-            #         painting_detection.draw_biggest_roi(
-            #             img2, contours, approximate=False)
+                    painting = frame[int(top * 0.75):int(bottom),
+                                     int(left):int(right)]
+                    cv2.imshow("roi", painting)
 
-            #     # components, stats = image_segmentation(img_equalized)
-            #     # drawn_components = draw_components(components)
-            #     #painting_detection.draw_ccl_rois(img2, stats)
-
+                    rectify.rectify(painting)
             #     cv2.imshow("Frame", img2)
 
             # out.write(img3)

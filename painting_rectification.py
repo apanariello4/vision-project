@@ -1,11 +1,14 @@
-import cv2
-import numpy as np
-from painting_retrieval import RetrieveClass
-from painting_detection import auto_canny
-from scipy.spatial import distance as dist
-from functools import reduce
-import operator
 import math
+import operator
+from functools import reduce
+
+from cv2 import cv2
+import numpy as np
+from scipy.spatial import distance as dist
+
+import utils
+from painting_detection import auto_canny
+from painting_retrieval import RetrieveClass
 
 
 class RectifyClass():
@@ -32,21 +35,45 @@ class RectifyClass():
         img[dst > 0.01 * dst.max()] = [0, 0, 255]
 
     def rectify(self, painting_roi):
-        ranked_list, dst_points, src_points = self.retrieve.retrieve(painting_roi)
+        try:
+            ranked_list, dst_points, src_points = self.retrieve.retrieve(
+                painting_roi)
+        except TypeError:
+            print("Painting not found in Database")
+            return
+
         best = max(ranked_list, key=ranked_list.get)
         match = cv2.imread(best)
         h_match = int(match.shape[0])
         w_match = int(match.shape[1])
+
+        src_points = np.squeeze(src_points, axis=1).astype(np.float32)
+        # src_points = np.array(utils.remove_points_outside_roi(
+        #     src_points, w_match, h_match))
+
         if src_points.shape[0] < 4:
             src_points = self.get_corners(painting_roi, True)
-            ##################### dst_point((x, y), (x+w, y), (x+w, y+h), (x, y+h))
-            # dst_points = np.array([(0, 0), (w_match, 0), (w_match, h_match), (0, h_match)])
-            dst_points = np.array([(0, 0), (0, w_match), (h_match, 0), (h_match, w_match)])
+
+            if len(src_points) < 4:
+                print("Corners not found")
+                return None
+            src_points = utils.order_corners(src_points)
+            # dst_point((x, y), (x+w, y), (x+w, y+h), (x, y+h))
+
+            dst_points = np.array(
+                [(0, 0), (w_match, 0), (0, h_match), (w_match, h_match)])
+
             H, _ = cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)
-            painting_roi = cv2.warpPerspective(painting_roi, H, (h_match, w_match))
+
+            painting_roi = cv2.warpPerspective(
+                painting_roi, H, (w_match, h_match))
+            print("Warped from corners")
         else:
             H, _ = cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)
-            painting_roi = cv2.warpPerspective(painting_roi, H, (w_match, h_match))
+            painting_roi = cv2.warpPerspective(
+                painting_roi, H, (w_match, h_match))
+            print("Warped from keypoints")
+
         self.show_img(painting_roi)
 
     def get_corners(self, painting_roi, draw=False):
@@ -57,14 +84,15 @@ class RectifyClass():
             dilation, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
         # edges = auto_canny(thresh)
 
-        corners = cv2.goodFeaturesToTrack(dilation, 4, 0.01, painting_roi.shape[0] / 3)
+        corners = cv2.goodFeaturesToTrack(
+            dilation, 4, 0.01, painting_roi.shape[0] / 3)
         corners = np.int0(corners)
         corners = np.squeeze(corners)
         if draw:
             for corner in corners:
                 x, y = corner.ravel()
                 cv2.circle(painting_roi, (x, y), 3, 255, -1)
-        
+
         return corners
 
     def Homography(self, img, prev_img):
@@ -79,8 +107,10 @@ class RectifyClass():
         matches = bf.match(des1, des2)
         matches = sorted(matches, key=lambda x: x.distance)
 
-        src_pts = np.float32([kpt1[m.queryIdx].pt for m in matches]).reshape(-1, 1, 2)
-        dst_pts = np.float32([kpt2[m.trainIdx].pt for m in matches]).reshape(-1, 1, 2)
+        src_pts = np.float32(
+            [kpt1[m.queryIdx].pt for m in matches]).reshape(-1, 1, 2)
+        dst_pts = np.float32(
+            [kpt2[m.trainIdx].pt for m in matches]).reshape(-1, 1, 2)
 
         M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
         return M
@@ -92,7 +122,8 @@ class RectifyClass():
         """
         cv2.namedWindow("Painting rectification", cv2.WINDOW_KEEPRATIO)
         cv2.imshow("Painting rectification", img)
-        cv2.resizeWindow("Painting rectification", int(img.shape[1] / 2), int(img.shape[0] / 2))
+        cv2.resizeWindow("Painting rectification", int(
+            img.shape[1] / 2), int(img.shape[0] / 2))
         cv2.waitKey(0)
 
 

@@ -7,8 +7,6 @@ from scipy import ndimage
 from skimage.feature import peak_local_max
 from skimage.morphology import watershed
 
-import utils
-
 
 AREA_THRESHOLD = 2500
 

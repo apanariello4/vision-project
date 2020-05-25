@@ -46,7 +46,7 @@ class RetrieveClass:
         extracted_painting = img[y: y + h, x: x + w]
         return extracted_painting
 
-    def get_good_matches(self, matches, thresh=0.6):
+    def get_good_matches(self, matches, thresh=0.7):
         """
         Computes the best matches of 2 paintings_db that exceed a certain threshold
             :param matches: matches from 2 paintings_db
@@ -66,7 +66,8 @@ class RetrieveClass:
         """
         cv2.namedWindow("Checking...", cv2.WINDOW_KEEPRATIO)
         cv2.imshow("Checking...", img)
-        cv2.resizeWindow("Checking...", int(img.shape[1] / 2), int(img.shape[0] / 2))
+        cv2.resizeWindow("Checking...", int(
+            img.shape[1] / 2), int(img.shape[0] / 2))
 
     def show_match(self, img):
         """
@@ -78,7 +79,8 @@ class RetrieveClass:
             print("Match found: ", end="", flush=True)
             cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
             cv2.imshow("Match", img)
-            cv2.resizeWindow("Match", int(img.shape[1] / 2), int(img.shape[0] / 2))
+            cv2.resizeWindow("Match", int(
+                img.shape[1] / 2), int(img.shape[0] / 2))
         else:
             print("No match...")
 
@@ -100,7 +102,8 @@ class RetrieveClass:
 
         for file in glob.glob("paintings_db/*.png"):
             images[file] = cv2.imread(file, cv2.IMREAD_COLOR)
-            keypoints[file], descriptors[file] = matcher.detectAndCompute(images[file], None)
+            keypoints[file], descriptors[file] = matcher.detectAndCompute(
+                images[file], None)
             index = []
             for point in keypoints[file]:
                 temp = (point.pt, point.size, point.angle, point.response, point.octave,
@@ -115,7 +118,8 @@ class RetrieveClass:
         desc_out.close()
         end = time.time()
 
-        print("[COMPUTING] Loading time: " + "%.2f" % (end - start) + " seconds")
+        print("[COMPUTING] Loading time: " + "%.2f" %
+              (end - start) + " seconds")
 
         return images, keypoints, descriptors
 
@@ -170,7 +174,7 @@ class RetrieveClass:
         ranked_list = {
             k: v for k, v in reversed(sorted(dictionary.items(), key=lambda item: item[1]))
         }
-        print("Ranked list: ", end="", flush=True)
+        print("Ranked list: ", end="\n", flush=True)
         for item in ranked_list:
             if ranked_list[item] > 0:
                 print("\"" + item + "\"" + " with " + "\"" + str(ranked_list[item]) + "\" keypoints matched" + "\t|\t",
@@ -189,19 +193,21 @@ class RetrieveClass:
         start = time.time()
 
         matched_collage = np.array([])
-        good_global = 0
+        good_global = 1
         images_ranked_list = {}
         self.frame_number += 1
         kp_coordinates_frame = []
         kp_coordinates_best_match = []
 
-        print("\n############  FRAME N°" + str(self.frame_number) + "  ############")
+        print("\n############  FRAME N°" +
+              str(self.frame_number) + "  ############")
 
         kp_frame, desc_frame = self.orb.detectAndCompute(painting_roi, None)
 
         for file in glob.glob("paintings_db/*.png"):
 
-            matches = self.bf.knnMatch(desc_frame, self.descriptors_db[file], k=2)
+            matches = self.bf.knnMatch(
+                desc_frame, self.descriptors_db[file], k=2)
 
             good = self.get_good_matches(matches)
 
@@ -219,17 +225,22 @@ class RetrieveClass:
             if int(images_ranked_list[file]) > int(good_global):
                 good_global = images_ranked_list[file]
                 matched_collage = collage
-                kp_coordinates_frame = np.float32([kp_frame[m[0].queryIdx].pt for m in good]).reshape(-1, 1, 2)
+                kp_coordinates_frame = np.float32(
+                    [kp_frame[m[0].queryIdx].pt for m in good]).reshape(-1, 1, 2)
                 kp_coordinates_best_match = np.float32(
                     [self.keypoints_db[file][m[0].trainIdx].pt for m in good]).reshape(
                     -1, 1, 2)
             self.check_match(collage)
             if cv2.waitKey(10) & 0xFF == ord("q"):
                 break
+        if good_global == 1:
+            # No img in db
+            print("Image not found in Database")
+            return None
 
         end = time.time()
         print("Time to search the matched image: " + "%.2f" % (
-                end - start) + " seconds")
+            end - start) + " seconds")
         self.show_match(matched_collage)
 
         if matched_collage.size != 0:
