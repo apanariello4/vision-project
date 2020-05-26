@@ -1,0 +1,41 @@
+\documentclass[12pt,oneside,a4paper,twocolumn]{article}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{fancyhdr}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{titlepic}
+\usepackage{parskip}
+\usepackage[affil-it]{authblk}
+
+\makeatletter
+\def\thm@space@setup{%
+  \thm@preskip=\parskip \thm@postskip=0pt
+}
+
+\pagestyle{fancy}
+
+\title{Pigliatell stu frame}
+
+\author{Aniello Panariello - 140195}%\\Fabrizio Sorgente - Mat 133855\\Emanuele Fenocchi - Mat 148869}
+\author{Fabrizio Sorgente - 133855}
+\author{Emanuele Fenocchi - 148869}
+\affil{University of Modena and Reggio Emilia}
+
+\begin{document}
+
+\maketitle
+
+\input{intro.tex}
+\input{painting-detection.tex}
+\input{painting-retrieval.tex}
+\input{painting-rectification.tex}
+\input{people-detection.tex}
+\input{people-localization.tex}
+\input{face-detection.tex}
+
+\end{document}
