@@ -92,7 +92,7 @@ def is_painting_outside_frame(frame_width, frame_height, left, top, right, botto
     :return False: painting is not outside frame
     """
 
-    if left < 0 or top < 0 or right > frame_width or bottom > frame_height:
+    if left <= 0 or top <= 0 or right >= frame_width or bottom >= frame_height:
         return True
     return False
 

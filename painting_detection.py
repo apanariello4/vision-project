@@ -7,6 +7,7 @@ from scipy import ndimage
 from skimage.feature import peak_local_max
 from skimage.morphology import watershed
 
+from utils import histogram, crop_image, entropy
 
 AREA_THRESHOLD = 2500
 
@@ -166,10 +167,10 @@ def dram_multiple_contours(img, contours, max_contours=10, approximate=False):
     overlap_area = np.zeros((max_contours, 4))
     for i in range(max_contours):
         x, y, w, h = cv2.boundingRect(c[i])
-        utils.crop_image(img, (x, y, w, h))
+        crop_image(img, (x, y, w, h))
 
-        entropy = utils.entropy(utils.histogram(
-            utils.crop_image(image_entropy, (x, y, w, h))))
+        entropy = (histogram(
+            crop_image(image_entropy, (x, y, w, h))))
         print(overlap_area)
 
         if entropy > 0:
