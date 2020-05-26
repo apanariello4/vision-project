@@ -12,11 +12,9 @@ class RetrieveClass:
     def __init__(self):
         self.orb = cv2.ORB_create()
         self.bf = cv2.BFMatcher(cv2.NORM_HAMMING)
-        self.frame_number = 0
         (self.images_db, self.keypoints_db, self.descriptors_db) = self.load_keypoints(compute_and_write=False,
                                                                                        matcher=self.orb)
-        self.frame_number = 0
-        print("Ready for painting retrieval")
+        print("[INFO] Ready for painting retrieval")
         print("___________________________________")
 
     def get_painting_from_roi(self, cntrs, img):
@@ -76,13 +74,13 @@ class RetrieveClass:
         """
         if img.size != 0:
             cv2.destroyWindow('Checking...')
-            print("Match found: ", end="", flush=True)
+            print("[SUCCESS] Match found: ", end="", flush=True)
             cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
             cv2.imshow("Match", img)
             cv2.resizeWindow("Match", int(
                 img.shape[1] / 2), int(img.shape[0] / 2))
         else:
-            print("No match...")
+            print("[ERROR] No match")
 
     def compute_and_write_kp(self, matcher=cv2.ORB_create()):
         """
@@ -117,8 +115,8 @@ class RetrieveClass:
         kp_out.close()
         desc_out.close()
         end = time.time()
-
-        print("[COMPUTING] Loading time: " + "%.2f" %
+        print("[SUCCESS] Keypoints and descriptors correctly computed and loaded into memory")
+        print("[INFO] Loading time: " + "%.2f" %
               (end - start) + " seconds")
 
         return images, keypoints, descriptors
@@ -132,21 +130,20 @@ class RetrieveClass:
             :param matcher: the matcher to use (i.e. ORB), defaults to cv2.ORB_create()
             :return: the loaded paintings_db, keypoints and descriptors
         """
-        print("___________________________________")
         if compute_and_write:
-            print("[Compute_and_write TRUE, switching to computing mode]")
+            print("[INFO] Compute_and_write TRUE, switching to computing mode")
             return self.compute_and_write_kp(matcher=matcher)
 
-        print("Searching for keypoints and descriptors...", end="", flush=True)
+        print("[INFO] Searching for keypoints and descriptors")
 
         if os.path.exists('resources/descriptors_db') and os.path.exists('resources/keypoints_db'):
-            print("[Files found]")
+            print("[SUCCESS] Files found")
             with open('resources/descriptors_db', 'rb') as f1:
                 descriptors = pickle.load(f1)
             with open('resources/keypoints_db', 'rb') as f2:
                 kp_db = pickle.load(f2)
         else:
-            print("[Files not found, passing to computing mode]")
+            print("[INFO] Files not found, passing to computing mode")
             return self.compute_and_write_kp(matcher=matcher)
         start = time.time()
         images = {}
@@ -162,7 +159,7 @@ class RetrieveClass:
                 kp.append(temp)
             keypoints[file] = kp
         end = time.time()
-        print("[LOADING] Loading time: " + "%.2f" % (end - start) + " seconds")
+        print("[INFO] Loading time: " + "%.2f" % (end - start) + " seconds")
 
         return images, keypoints, descriptors
 
@@ -174,7 +171,7 @@ class RetrieveClass:
         ranked_list = {
             k: v for k, v in reversed(sorted(dictionary.items(), key=lambda item: item[1]))
         }
-        print("Ranked list: ", end="\n", flush=True)
+        print("[INFO] Ranked list: ", end="\n", flush=True)
         for item in ranked_list:
             if ranked_list[item] > 0:
                 print("\"" + item + "\"" + " with " + "\"" + str(ranked_list[item]) + "\" keypoints matched" + "\t|\t",
@@ -190,17 +187,15 @@ class RetrieveClass:
         :param frame: the frame used for the retrieval
         :return: dictionary of matches for every painting in paintings_db
         '''
+        print("[INFO] Performing painting retrieval")
+
         start = time.time()
 
         matched_collage = np.array([])
         good_global = 1
         images_ranked_list = {}
-        self.frame_number += 1
         kp_coordinates_frame = []
         kp_coordinates_best_match = []
-
-        print("\n############  FRAME N°" +
-              str(self.frame_number) + "  ############")
 
         kp_frame, desc_frame = self.orb.detectAndCompute(painting_roi, None)
 
@@ -235,18 +230,18 @@ class RetrieveClass:
                 break
         if good_global == 1:
             # No img in db
-            print("Image not found in Database")
+            print("[FAIL] Painting not found in database")
             return None
 
         end = time.time()
-        print("Time to search the matched image: " + "%.2f" % (
-            end - start) + " seconds")
+        print("[INFO] Time to search the matched image: " + "%.2f" % (
+                end - start) + " seconds")
         self.show_match(matched_collage)
 
         if matched_collage.size != 0:
             print(max(images_ranked_list, key=images_ranked_list.get))
             self.print_ranked_list(images_ranked_list)
-        print("#####################################")
+        # print("#####################################")
         return images_ranked_list, kp_coordinates_best_match, kp_coordinates_frame
 
 ############ OLD #############

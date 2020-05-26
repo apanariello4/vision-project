@@ -9,10 +9,12 @@ class FaceDetectionClass():
         self.face_cascade = cv2.CascadeClassifier(
             'venv/lib/python3.7/site-packages/cv2/data/haarcascade_frontalface_default.xml')
         self.eye_cascade = cv2.CascadeClassifier('venv/lib/python3.7/site-packages/cv2/data/haarcascade_eye.xml')
-        print("Ready for face detection")
+        print("[INFO] Ready for face detection")
         print("___________________________________")
 
     def is_facing_camera(self, person_roi) -> bool:
+        print("[INFO] Performing face detection")
+
         start = time.time()
         face = []
         gray_person_roi = cv2.cvtColor(person_roi, cv2.COLOR_BGR2GRAY)
@@ -23,7 +25,7 @@ class FaceDetectionClass():
             face_roi = gray_person_roi[y:y + h, x:x + w]
             eyes = self.eye_cascade.detectMultiScale(face_roi)
             end = time.time()
-            print("Time to detect the face: " + "%.2f" % (
+            print("[INFO] Face found. Time to detect the face: " + "%.2f" % (
                     end - start) + " seconds")
             if len(eyes) != 0:
                 for (ex, ey, ew, eh) in eyes:
@@ -35,7 +37,7 @@ class FaceDetectionClass():
                 return False
         else:
             end = time.time()
-            print("Time to detect the face: " + "%.2f" % (
+            print("[INFO] No face found. Time to detect the face: " + "%.2f" % (
                     end - start) + " seconds")
             return False
 

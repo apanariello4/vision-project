@@ -165,8 +165,8 @@ class YOLOLayer(nn.Module):
         prediction = (
             x.view(num_samples, self.num_anchors,
                    self.num_classes + 5, grid_size, grid_size)
-            .permute(0, 1, 3, 4, 2)
-            .contiguous()
+                .permute(0, 1, 3, 4, 2)
+                .contiguous()
         )
 
         # Get outputs
@@ -229,11 +229,11 @@ class YOLOLayer(nn.Module):
             iou75 = (iou_scores > 0.75).float()
             detected_mask = conf50 * class_mask * tconf
             precision = torch.sum(iou50 * detected_mask) / \
-                (conf50.sum() + 1e-16)
+                        (conf50.sum() + 1e-16)
             recall50 = torch.sum(iou50 * detected_mask) / \
-                (obj_mask.sum() + 1e-16)
+                       (obj_mask.sum() + 1e-16)
             recall75 = torch.sum(iou75 * detected_mask) / \
-                (obj_mask.sum() + 1e-16)
+                       (obj_mask.sum() + 1e-16)
 
             self.metrics = {
                 "loss": to_cpu(total_loss).item(),
@@ -259,7 +259,7 @@ class Darknet(nn.Module):
     """YOLOv3 object detection model"""
 
     def __init__(self):
-        print("Loading YOLO network for people detection...")
+        print("[INFO] Loading YOLO network for people detection")
         super(Darknet, self).__init__()
         self.confidence = 0.5
         self.nmsTreshold = 0.4
@@ -276,8 +276,8 @@ class Darknet(nn.Module):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
         self.eval().to(self.device)
-        print("Network successfully loaded")
-        print("Ready for detection")
+        print("[SUCCESS] Network successfully loaded")
+        print("[INFO] Ready for detection")
         print("___________________________________")
 
     def forward(self, x, targets=None):
@@ -397,6 +397,7 @@ class Darknet(nn.Module):
         left, top, right and bottom are the coordinates of the bounding boxes.
         '''
         # load detection class, default confidence threshold is 0.5
+        print("[INFO] Performing detection")
         start = time.time()
         detect = DetectBoxes(
             self.path_to_labels, conf_threshold=self.confidence, nms_threshold=self.nmsTreshold)
@@ -405,7 +406,7 @@ class Darknet(nn.Module):
             frame, self.img_size, self, draw_rois=draw)
         end = time.time()
         print(
-            f'Time to perform the detection: {round(end - start, 2)} seconds | FPS: {round((1 / (end - start)))}')
+            f'[INFO] Time to perform the detection: {round(end - start, 2)} seconds | FPS: {round((1 / (end - start)))}')
 
         # cv2.putText(frame, '{:.2f}ms'.format((end - start) * 1000), (40, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
         #            (255, 0, 0), 2)

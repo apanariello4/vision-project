@@ -14,16 +14,16 @@ from painting_retrieval import RetrieveClass
 class RectifyClass():
     def __init__(self, retrieve):
         self.retrieve = retrieve
-        print("Ready for painting rectification")
+        print("[INFO] Ready for painting rectification")
         print("___________________________________")
 
     def rectify(self, painting_roi):
-
+        print("[INFO] Performing painting rectification")
         try:
             # Check if the painting is in db
             ranked_list, dst_points, src_points = self.retrieve.retrieve(
                 painting_roi)
-            print("Painting found in Database")
+            # print("Painting found in Database")
             if not rectify_with_db(painting_roi, ranked_list, dst_points, src_points):
                 return None
         except TypeError:
@@ -52,7 +52,7 @@ def rectify_with_db(painting_roi, ranked_list, dst_points, src_points) -> bool:
         src_points = get_corners(painting_roi)
 
         if len(src_points) < 4:
-            print("Corners not found")
+            print("[ERROR] Can't find enough corners")
             return None
         src_points = utils.order_corners(src_points)
         # dst_point((x, y), (x+w, y), (x+w, y+h), (x, y+h))
@@ -64,13 +64,16 @@ def rectify_with_db(painting_roi, ranked_list, dst_points, src_points) -> bool:
 
         painting_roi = cv2.warpPerspective(
             painting_roi, H, (w_match, h_match))
-        print("Warped from corners")
+        print("[SUCCESS] Warped from corners")
         show_img(painting_roi)
     else:
-        H, _ = cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)
+        H, _ = cv2.findHomography(src_points, dst_points, cv2.LMEDS, 5.0)
+        if H is None:
+            print("[ERROR] Homography matrix can't be estimated. Rectification aborted.")
+            return None
         painting_roi = cv2.warpPerspective(
             painting_roi, H, (w_match, h_match))
-        print("Warped from keypoints")
+        print("[SUCCESS] Warped from keypoints")
         show_img(painting_roi)
     return True
 
