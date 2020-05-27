@@ -424,4 +424,4 @@ class Darknet(nn.Module):
         cv2.imshow('Detection', img)
         cv2.resizeWindow('Detection', int(
             img.shape[1] / 2), int(img.shape[0] / 2))
-        cv2.waitKey()
+        cv2.waitKey(10)
