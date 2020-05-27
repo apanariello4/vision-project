@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.5.23)  26 MAY 2020 16:38
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.5.23)  27 MAY 2020 17:04
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -8,8 +8,8 @@ entering extended mode
 LaTeX2e <2020-02-02> patch level 2
 L3 programming layer <2020-02-14> (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2019/12/20 v1.4l Standard LaTeX document class
-(/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo
-File: size12.clo 2019/12/20 v1.4l Standard LaTeX file (size option)
+(/usr/share/texlive/texmf-dist/tex/latex/base/size11.clo
+File: size11.clo 2019/12/20 v1.4l Standard LaTeX file (size option)
 )
 \c@part=\count167
 \c@section=\count168
@@ -260,11 +260,23 @@ Package: authblk 2001/02/27 1.3 (PWD)
 \c@Maxaffil=\count269
 \c@authors=\count270
 \c@affil=\count271
-) (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def
+) (/usr/share/texlive/texmf-dist/tex/latex/lipsum/lipsum.sty (/usr/share/texlive/texmf-dist/tex/latex/l3kernel/expl3.sty
+Package: expl3 2020-02-14 L3 programming layer (loader) 
+ (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def
 File: l3backend-pdfmode.def 2020-02-03 L3 backend support: PDF mode
 \l__kernel_color_stack_int=\count272
 \l__pdf_internal_box=\box51
-) (/home/nello/Desktop/vision-project/report/report.aux)
+)) (/usr/share/texlive/texmf-dist/tex/latex/l3packages/xparse/xparse.sty
+Package: xparse 2020-02-14 L3 Experimental document command parser
+\l__xparse_current_arg_int=\count273
+\g__xparse_grabber_int=\count274
+\l__xparse_m_args_int=\count275
+\l__xparse_v_nesting_int=\count276
+)
+Package: lipsum 2019/01/02 v2.2 150 paragraphs of Lorem Ipsum dummy text
+ (/usr/share/texlive/texmf-dist/tex/latex/lipsum/lipsum.ltd.tex
+File: lipsum.ltd.tex 2019/01/02 v2.2 The Lorem ipsum dummy text
+)) (/home/nello/Desktop/vision-project/report/report.aux)
 \openout1 = `report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 29.
@@ -292,7 +304,7 @@ Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
 ) (/usr/share/texlive/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
-\c@section@level=\count273
+\c@section@level=\count277
 )
 LaTeX Info: Redefining \ref on input line 29.
 LaTeX Info: Redefining \pageref on input line 29.
@@ -314,32 +326,35 @@ italian.ldf    on input line 29.
 
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count274
+\scratchcounter=\count278
 \scratchdimen=\dimen163
 \scratchbox=\box53
-\nofMPsegments=\count275
-\nofMParguments=\count276
+\nofMPsegments=\count279
+\nofMParguments=\count280
 \everyMPshowfont=\toks21
-\MPscratchCnt=\count277
+\MPscratchCnt=\count281
 \MPscratchDim=\dimen164
-\MPnumerator=\count278
-\makeMPintoPDFobject=\count279
+\MPnumerator=\count282
+\makeMPintoPDFobject=\count283
 \everyMPtoPDFconversion=\toks22
 ) (/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
  (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
-)) (/home/nello/Desktop/vision-project/report/intro.tex) (/home/nello/Desktop/vision-project/report/painting-detection.tex) (/home/nello/Desktop/vision-project/report/painting-retrieval.tex) (/home/nello/Desktop/vision-project/report/painting-rectification.tex) (/home/nello/Desktop/vision-project/report/people-detection.tex) (/home/nello/Desktop/vision-project/report/people-localization.tex) (/home/nello/Desktop/vision-project/report/face-detection.tex
-Underfull \hbox (badness 4467) in paragraph at lines 1--1
-[]\OT1/cmr/bx/n/17.28 People Fa-cing Pain-
- []
+)) (/home/nello/Desktop/vision-project/report/intro.tex) (/home/nello/Desktop/vision-project/report/painting-detection.tex) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
-)
+
+]
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 41.
- [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
+Package Fancyhdr Warning: \headheight is too small (12.0pt): 
+Make it at least 13.59999pt.
+We now make it that large for the rest of the document.
+This may cause the page layout to be inconsistent, however.
+
+[2
 
 ]
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 41.
@@ -347,22 +362,22 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 41.
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 41.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 41.
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: C31E2CF51EC8F9E3014AA052AF7A4CB1;373.
+(rerunfilecheck)             Checksum: 36306CFDC9789BB129A24943AF3D1099;100.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 41.
  ) 
 Here is how much of TeX's memory you used:
- 7149 strings out of 483172
- 106327 string characters out of 5965816
- 380134 words of memory out of 5000000
- 22013 multiletter control sequences out of 15000+600000
- 534186 words of font info for 30 fonts, out of 8000000 for 9000
+ 7680 strings out of 483172
+ 121175 string characters out of 5965816
+ 658889 words of memory out of 5000000
+ 22548 multiletter control sequences out of 15000+600000
+ 534540 words of font info for 31 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 34i,5n,45p,950b,334s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb>
-Output written on /home/nello/Desktop/vision-project/report/report.pdf (1 page, 48400 bytes).
+ 35i,11n,45p,968b,366s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsl10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb>
+Output written on /home/nello/Desktop/vision-project/report/report.pdf (2 pages, 78656 bytes).
 PDF statistics:
- 60 PDF objects out of 1000 (max. 8388607)
- 52 compressed objects within 1 object stream
- 9 named destinations out of 1000 (max. 500000)
- 57 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 50 PDF objects out of 1000 (max. 8388607)
+ 39 compressed objects within 1 object stream
+ 5 named destinations out of 1000 (max. 500000)
+ 17 words of extra memory for PDF output out of 10000 (max. 10000000)
 
