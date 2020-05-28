@@ -85,7 +85,7 @@ def equalize_luma(img):
     return img
 
 
-def is_painting_outside_frame(frame_width, frame_height, left, top, right, bottom) -> bool:
+def is_roi_outside_frame(frame_width, frame_height, left, top, right, bottom) -> bool:
     """Check if a painting roi is outside of the frame
 
     :return True: painting is outside frame
