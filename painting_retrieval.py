@@ -44,7 +44,7 @@ class RetrieveClass:
         extracted_painting = img[y: y + h, x: x + w]
         return extracted_painting
 
-    def get_good_matches(self, matches, thresh=0.7):
+    def get_good_matches(self, matches, thresh=0.6):
         """
         Computes the best matches of 2 paintings_db that exceed a certain threshold
             :param matches: matches from 2 paintings_db
@@ -115,7 +115,8 @@ class RetrieveClass:
         kp_out.close()
         desc_out.close()
         end = time.time()
-        print("[SUCCESS] Keypoints and descriptors correctly computed and loaded into memory")
+        print(
+            "[SUCCESS] Keypoints and descriptors correctly computed and loaded into memory")
         print("[INFO] Loading time: " + "%.2f" %
               (end - start) + " seconds")
 
@@ -235,7 +236,7 @@ class RetrieveClass:
 
         end = time.time()
         print("[INFO] Time to search the matched image: " + "%.2f" % (
-                end - start) + " seconds")
+            end - start) + " seconds")
         self.show_match(matched_collage)
 
         if matched_collage.size != 0:
