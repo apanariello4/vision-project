@@ -3,7 +3,7 @@
 \usepackage{booktabs}
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
-\usepackage[italian]{babel}
+\usepackage[english]{babel}
 \usepackage{fancyhdr}
 \usepackage[table,xcdraw]{xcolor}
 \usepackage{tabularx}
@@ -12,6 +12,11 @@
 \usepackage{parskip}
 \usepackage[affil-it]{authblk}
 \usepackage{lipsum}
+\usepackage{biblatex}
+
+\addbibresource{bibliography.bib}
+
+
 \makeatletter
 \def\thm@space@setup{%
   \thm@preskip=\parskip \thm@postskip=0pt
@@ -32,10 +37,11 @@
 
 \input{intro.tex}
 \input{painting-detection.tex}
-%\input{painting-retrieval.tex}
+\input{painting-retrieval.tex}
 %\input{painting-rectification.tex}
 %\input{people-detection.tex}
 %\input{people-localization.tex}
 %\input{face-detection.tex}
+\printbibliography[heading=bibintoc,title={Bibliografia}]\thispagestyle{empty}
 
 \end{document}
