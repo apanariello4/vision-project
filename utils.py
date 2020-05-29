@@ -83,3 +83,55 @@ def equalize_luma(img):
     img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)
 
     return img
+
+
+def is_roi_outside_frame(frame_width, frame_height, left, top, right, bottom) -> bool:
+    """Check if a painting roi is outside of the frame
+
+    :return True: painting is outside frame
+    :return False: painting is not outside frame
+    """
+
+    if left <= 0 or top <= 0 or right >= frame_width or bottom >= frame_height:
+        return True
+    return False
+
+
+def order_corners(corners: list) -> list:
+    """Takes a list of corners and orders it clockwise
+
+    :param corners: list of corners
+    :type corners: list
+    :return: ordered list of corners
+    :rtype: list
+    """
+    a = np.sum(corners, axis=1)
+    idx = np.argsort(a).astype(np.int32)
+    corners = corners[idx, :]
+    # [(0, 0), (x, 0), (0, y), (x, y)]
+    if corners.shape[0] == 4:
+        upper_right = corners[1]
+        lower_left = corners[2]
+
+        if upper_right[0] < lower_left[0]:
+            # swaps the two coordinates
+            corners[1], corners[2] = corners[2], corners[1]
+
+    return corners
+
+
+def remove_points_outside_roi(src_points: list, frame_width: int, frame_height: int) -> list:
+    """Removes points that are outside of the frame
+
+    :param src_points: list of coordinates
+    :type src_points: list
+    :param frame_width: width
+    :type frame_width: int
+    :param frame_height: height
+    :type frame_height: int
+    :return: list of coordinates inside frame
+    :rtype: list
+    """
+
+    return [coordinates for coordinates in src_points if (coordinates[0]
+                                                          < frame_width) and (coordinates[1] < frame_height)]

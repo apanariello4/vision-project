@@ -1,0 +1,44 @@
+\documentclass[11pt,oneside,a4paper,twocolumn]{article}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{parskip}
+\usepackage[affil-it]{authblk}
+\usepackage{lipsum}
+\usepackage{biblatex}
+\usepackage{csquotes}
+
+\addbibresource{bibliography.bib}
+
+
+\makeatletter
+\def\thm@space@setup{%
+  \thm@preskip=\parskip \thm@postskip=0pt
+}
+
+\pagestyle{fancy}
+
+\title{Painting Detection and Rectification with People Detection}
+
+\author{Aniello Panariello - 140195}%\\Fabrizio Sorgente - Mat 133855\\Emanuele Fenocchi - Mat 148869}
+\author{Fabrizio Sorgente - 133855}
+\author{Emanuele Fenocchi - 148869}
+\affil{University of Modena and Reggio Emilia}
+
+\begin{document}
+
+\maketitle
+
+\input{intro.tex}
+\input{painting-detection.tex}
+\input{painting-retrieval.tex}
+%\input{painting-rectification.tex}
+%\input{people-detection.tex}
+%\input{people-localization.tex}
+%\input{face-detection.tex}
+\printbibliography[heading=bibintoc,title={Bibliografia}]\thispagestyle{empty}
+
+\end{document}

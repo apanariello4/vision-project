@@ -1,0 +1,68 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.1 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{orb}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=0bb47e98134bf40d7a1305159e411dee}{%
+           family={Rublee},
+           familyi={R\bibinitperiod},
+           given={Ethan},
+           giveni={E\bibinitperiod}}}%
+        {{hash=2f19094c6a3c4b8289b0e2545d993850}{%
+           family={Rabaud},
+           familyi={R\bibinitperiod},
+           given={Vincent},
+           giveni={V\bibinitperiod}}}%
+        {{hash=7aa08b4f01b4f639731fdb416173ccd1}{%
+           family={Konolige},
+           familyi={K\bibinitperiod},
+           given={Kurt},
+           giveni={K\bibinitperiod}}}%
+        {{hash=a780b2fbd99e4f7ce78d33324e39d4c2}{%
+           family={Bradski},
+           familyi={B\bibinitperiod},
+           given={Gary},
+           giveni={G\bibinitperiod}}}%
+      }
+      \strng{namehash}{ec89b2297475b175019a601cfe2229a6}
+      \strng{fullhash}{50ca2b6817769790341c2b722e0b2ab3}
+      \strng{bibnamehash}{ec89b2297475b175019a601cfe2229a6}
+      \strng{authorbibnamehash}{ec89b2297475b175019a601cfe2229a6}
+      \strng{authornamehash}{ec89b2297475b175019a601cfe2229a6}
+      \strng{authorfullhash}{50ca2b6817769790341c2b722e0b2ab3}
+      \field{sortinit}{R}
+      \field{sortinithash}{b9c68a358aea118dfa887b6e902414a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the IEEE International Conference on Computer Vision}
+      \field{month}{11}
+      \field{title}{ORB: an efficient alternative to SIFT or SURF}
+      \field{year}{2011}
+      \field{pages}{2564\bibrangedash 2571}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1109/ICCV.2011.6126544
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

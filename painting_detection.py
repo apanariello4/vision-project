@@ -7,8 +7,7 @@ from scipy import ndimage
 from skimage.feature import peak_local_max
 from skimage.morphology import watershed
 
-import utils
-
+from utils import histogram, crop_image, entropy
 
 AREA_THRESHOLD = 2500
 
@@ -168,10 +167,10 @@ def dram_multiple_contours(img, contours, max_contours=10, approximate=False):
     overlap_area = np.zeros((max_contours, 4))
     for i in range(max_contours):
         x, y, w, h = cv2.boundingRect(c[i])
-        utils.crop_image(img, (x, y, w, h))
+        crop_image(img, (x, y, w, h))
 
-        entropy = utils.entropy(utils.histogram(
-            utils.crop_image(image_entropy, (x, y, w, h))))
+        entropy = (histogram(
+            crop_image(image_entropy, (x, y, w, h))))
         print(overlap_area)
 
         if entropy > 0:
@@ -182,39 +181,3 @@ def dram_multiple_contours(img, contours, max_contours=10, approximate=False):
 
                 print(x, y, w, h)
                 overlap_area[i, :] = x, y, w, h
-
-
-def watershed_segmentation(img):
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    thresh = cv2.adaptiveThreshold(
-        gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 3, 2
-    )
-    D = ndimage.distance_transform_edt(thresh)
-
-    localMax = peak_local_max(D, indices=False, min_distance=20,
-                              labels=thresh)
-    markers = ndimage.label(localMax, structure=np.ones((3, 3)))[0]
-
-    labels = watershed(-D, markers, mask=thresh)
-    print("[INFO] {} unique segments found".format(len(np.unique(labels)) - 1))
-    for label in np.unique(labels):
-        # if the label is zero, we are examining the 'background'
-        # so simply ignore it
-        if label == 0:
-            continue
-        # otherwise, allocate memory for the label region and draw
-        # it on the mask
-        mask = np.zeros(gray.shape, dtype="uint8")
-        mask[labels == label] = 255
-        # detect contours in the mask and grab the largest one
-        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
-                                cv2.CHAIN_APPROX_SIMPLE)
-        cnts = imutils.grab_contours(cnts)
-        c = max(cnts, key=cv2.contourArea)
-        # draw a circle enclosing the object
-        ((x, y), r) = cv2.minEnclosingCircle(c)
-        cv2.circle(img, (int(x), int(y)), int(r), (0, 255, 0), 2)
-        cv2.putText(img, "#{}".format(label), (int(x) - 10, int(y)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-        # show the output image
-    cv2.imshow("Output", img)

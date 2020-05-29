@@ -12,11 +12,9 @@ class RetrieveClass:
     def __init__(self):
         self.orb = cv2.ORB_create()
         self.bf = cv2.BFMatcher(cv2.NORM_HAMMING)
-        self.frame_number = 0
         (self.images_db, self.keypoints_db, self.descriptors_db) = self.load_keypoints(compute_and_write=False,
                                                                                        matcher=self.orb)
-        self.frame_number = 0
-        print("Ready for painting retrieval")
+        print("[INFO] Ready for painting retrieval")
         print("___________________________________")
 
     def get_painting_from_roi(self, cntrs, img):
@@ -66,7 +64,8 @@ class RetrieveClass:
         """
         cv2.namedWindow("Checking...", cv2.WINDOW_KEEPRATIO)
         cv2.imshow("Checking...", img)
-        cv2.resizeWindow("Checking...", int(img.shape[1] / 2), int(img.shape[0] / 2))
+        cv2.resizeWindow("Checking...", int(
+            img.shape[1] / 2), int(img.shape[0] / 2))
 
     def show_match(self, img):
         """
@@ -75,12 +74,13 @@ class RetrieveClass:
         """
         if img.size != 0:
             cv2.destroyWindow('Checking...')
-            print("Match found: ", end="", flush=True)
+            print("[SUCCESS] Match found: ", end="", flush=True)
             cv2.namedWindow("Match", cv2.WINDOW_KEEPRATIO)
             cv2.imshow("Match", img)
-            cv2.resizeWindow("Match", int(img.shape[1] / 2), int(img.shape[0] / 2))
+            cv2.resizeWindow("Match", int(
+                img.shape[1] / 2), int(img.shape[0] / 2))
         else:
-            print("No match...")
+            print("[ERROR] No match")
 
     def compute_and_write_kp(self, matcher=cv2.ORB_create()):
         """
@@ -100,7 +100,8 @@ class RetrieveClass:
 
         for file in glob.glob("paintings_db/*.png"):
             images[file] = cv2.imread(file, cv2.IMREAD_COLOR)
-            keypoints[file], descriptors[file] = matcher.detectAndCompute(images[file], None)
+            keypoints[file], descriptors[file] = matcher.detectAndCompute(
+                images[file], None)
             index = []
             for point in keypoints[file]:
                 temp = (point.pt, point.size, point.angle, point.response, point.octave,
@@ -114,8 +115,10 @@ class RetrieveClass:
         kp_out.close()
         desc_out.close()
         end = time.time()
-
-        print("[COMPUTING] Loading time: " + "%.2f" % (end - start) + " seconds")
+        print(
+            "[SUCCESS] Keypoints and descriptors correctly computed and loaded into memory")
+        print("[INFO] Loading time: " + "%.2f" %
+              (end - start) + " seconds")
 
         return images, keypoints, descriptors
 
@@ -128,21 +131,20 @@ class RetrieveClass:
             :param matcher: the matcher to use (i.e. ORB), defaults to cv2.ORB_create()
             :return: the loaded paintings_db, keypoints and descriptors
         """
-        print("___________________________________")
         if compute_and_write:
-            print("[Compute_and_write TRUE, switching to computing mode]")
+            print("[INFO] Compute_and_write TRUE, switching to computing mode")
             return self.compute_and_write_kp(matcher=matcher)
 
-        print("Searching for keypoints and descriptors...", end="", flush=True)
+        print("[INFO] Searching for keypoints and descriptors")
 
         if os.path.exists('resources/descriptors_db') and os.path.exists('resources/keypoints_db'):
-            print("[Files found]")
+            print("[SUCCESS] Files found")
             with open('resources/descriptors_db', 'rb') as f1:
                 descriptors = pickle.load(f1)
             with open('resources/keypoints_db', 'rb') as f2:
                 kp_db = pickle.load(f2)
         else:
-            print("[Files not found, passing to computing mode]")
+            print("[INFO] Files not found, passing to computing mode")
             return self.compute_and_write_kp(matcher=matcher)
         start = time.time()
         images = {}
@@ -158,7 +160,7 @@ class RetrieveClass:
                 kp.append(temp)
             keypoints[file] = kp
         end = time.time()
-        print("[LOADING] Loading time: " + "%.2f" % (end - start) + " seconds")
+        print("[INFO] Loading time: " + "%.2f" % (end - start) + " seconds")
 
         return images, keypoints, descriptors
 
@@ -170,7 +172,7 @@ class RetrieveClass:
         ranked_list = {
             k: v for k, v in reversed(sorted(dictionary.items(), key=lambda item: item[1]))
         }
-        print("Ranked list: ", end="", flush=True)
+        print("[INFO] Ranked list: ", end="\n", flush=True)
         for item in ranked_list:
             if ranked_list[item] > 0:
                 print("\"" + item + "\"" + " with " + "\"" + str(ranked_list[item]) + "\" keypoints matched" + "\t|\t",
@@ -180,60 +182,69 @@ class RetrieveClass:
                 print("...")
                 break
 
-    def retrieve(self, frame):
-        """
-        For every video frame, it retrieves from paintings_db the painting with more keypoints matches
-        """
+    def retrieve(self, painting_roi):
+        '''
+        Given a frame, it retrieves from paintings_db the painting with more keypoints matches
+        :param frame: the frame used for the retrieval
+        :return: dictionary of matches for every painting in paintings_db
+        '''
+        print("[INFO] Performing painting retrieval")
+
         start = time.time()
 
         matched_collage = np.array([])
-        good_global = 0
+        good_global = 1
         images_ranked_list = {}
-        cntrs, _ = contours(frame, adaptive=False)
-        self.frame_number += 1
+        kp_coordinates_frame = []
+        kp_coordinates_best_match = []
 
-        print("\n############  FRAME N°" + str(self.frame_number) + "  ############")
-        if len(cntrs) != 0:
+        kp_frame, desc_frame = self.orb.detectAndCompute(painting_roi, None)
 
-            img_frame = self.get_painting_from_roi(cntrs, frame)
+        for file in glob.glob("paintings_db/*.png"):
 
-            kp_frame, desc_frame = self.orb.detectAndCompute(img_frame, None)
+            matches = self.bf.knnMatch(
+                desc_frame, self.descriptors_db[file], k=2)
 
-            for file in glob.glob("paintings_db/*.png"):
+            good = self.get_good_matches(matches)
 
-                matches = self.bf.knnMatch(desc_frame, self.descriptors_db[file], k=2)
+            collage = cv2.drawMatchesKnn(
+                painting_roi,
+                kp_frame,
+                self.images_db[file],
+                self.keypoints_db[file],
+                good,
+                None,
+                flags=2,
+            )
 
-                good = self.get_good_matches(matches)
+            images_ranked_list[file] = np.asarray(good).shape[0]
+            if int(images_ranked_list[file]) > int(good_global):
+                good_global = images_ranked_list[file]
+                matched_collage = collage
+                kp_coordinates_frame = np.float32(
+                    [kp_frame[m[0].queryIdx].pt for m in good]).reshape(-1, 1, 2)
+                kp_coordinates_best_match = np.float32(
+                    [self.keypoints_db[file][m[0].trainIdx].pt for m in good]).reshape(
+                    -1, 1, 2)
+            self.check_match(collage)
+            if cv2.waitKey(10) & 0xFF == ord("q"):
+                break
+        if good_global == 1:
+            # No img in db
+            print("[FAIL] Painting not found in database")
+            return None
 
-                collage = cv2.drawMatchesKnn(
-                    img_frame,
-                    kp_frame,
-                    self.images_db[file],
-                    self.keypoints_db[file],
-                    good,
-                    None,
-                    flags=2,
-                )
+        end = time.time()
+        print("[INFO] Time to search the matched image: " + "%.2f" % (
+            end - start) + " seconds")
+        self.show_match(matched_collage)
 
-                images_ranked_list[file] = np.asarray(good).shape[0]
-                if int(images_ranked_list[file]) > int(good_global):
-                    good_global = images_ranked_list[file]
-                    matched_collage = collage
+        if matched_collage.size != 0:
+            print(max(images_ranked_list, key=images_ranked_list.get))
+            self.print_ranked_list(images_ranked_list)
+        # print("#####################################")
+        return images_ranked_list, kp_coordinates_best_match, kp_coordinates_frame
 
-                self.check_match(collage)
-                if cv2.waitKey(10) & 0xFF == ord("q"):
-                    break
-
-            end = time.time()
-            print("Time to search the matched image: " + "%.2f" % (
-                    end - start) + " seconds")
-            self.show_match(matched_collage)
-
-            if matched_collage.size != 0:
-                print(max(images_ranked_list, key=images_ranked_list.get))
-                self.print_ranked_list(images_ranked_list)
-            print("#####################################")
-            return images_ranked_list
 ############ OLD #############
 
 # def retrieval():
