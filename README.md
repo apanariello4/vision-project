@@ -3,7 +3,7 @@
 
 # Features
 - [x] **Painting detection:** predict a ROI for each painting
-    - [x] **Statue detection**
+    - [x] **Statue detection:** predict a ROI for each statue
 - [x] **Painting rectification:** correct the perspective distortion of each painting
 - [x] **Painting retrieval:** match each detected painting to the paintings DB
 - [x] **People detection:** predict a ROI around each person
