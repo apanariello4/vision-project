@@ -31,7 +31,8 @@ for video in videos_sample:
             break
 
         ret, frame = cap.read()
-        if file_extension.upper() == "MOV":
+
+        if file_extension.upper() == ".MOV":
             frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         cv2.imwrite(
             f'{output_path}/{file_name}-frame-{frame_number}.png', frame)
