@@ -93,6 +93,7 @@ def is_roi_outside_frame(frame_width, frame_height, left, top, right, bottom) ->
     """
 
     if left <= 0 or top <= 0 or right >= frame_width or bottom >= frame_height:
+        print("[ERROR] Roi outside frame")
         return True
     return False
 

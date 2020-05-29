@@ -45,8 +45,8 @@ def rectify_with_db(painting_roi, ranked_list, dst_points, src_points) -> bool:
 
     src_points = np.squeeze(src_points, axis=1).astype(np.float32)
     dst_points = np.squeeze(dst_points, axis=1).astype(np.float32)
-    src_points = np.array(utils.remove_points_outside_roi(
-        src_points, w_match, h_match))
+    # src_points = np.array(utils.remove_points_outside_roi(
+    #    src_points, w_match, h_match))
 
     if src_points.shape[0] < 4:
         src_points = get_corners(painting_roi)
@@ -61,13 +61,15 @@ def rectify_with_db(painting_roi, ranked_list, dst_points, src_points) -> bool:
             [(0, 0), (w_match, 0), (0, h_match), (w_match, h_match)])
 
         H, _ = cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)
-
+        if H is None:
+            print("[ERROR] Homography matrix can't be estimated. Rectification aborted.")
+            return None
         painting_roi = cv2.warpPerspective(
             painting_roi, H, (w_match, h_match))
         print("[SUCCESS] Warped from corners")
         show_img(painting_roi)
     else:
-        H, _ = cv2.findHomography(src_points, dst_points, cv2.LMEDS, 5.0)
+        H, _ = cv2.findHomography(src_points, dst_points, cv2.RANSAC, 5.0)
         if H is None:
             print("[ERROR] Homography matrix can't be estimated. Rectification aborted.")
             return None
