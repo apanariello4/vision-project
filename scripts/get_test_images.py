@@ -4,9 +4,10 @@ import os
 
 import cv2
 
-videos_path = "/home/nello/Desktop/Project material/videos"
-output_path = "/home/nello/Desktop/vision-project/images"
-
+# videos_path = "/home/nello/Desktop/Project material/videos"
+videos_path = "/Users/Fabrizio/Desktop/VCS/Project material/videos"
+# output_path = "/home/nello/Desktop/vision-project/images"
+output_path = "/Users/Fabrizio/PycharmProjects/vision-project/images"
 videos_list = glob.glob(f'{videos_path}/**/*.*', recursive=False)
 
 videos_sample = random.sample(videos_list, 50)
