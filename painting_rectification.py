@@ -31,6 +31,26 @@ class RectifyClass():
             if not rectify_without_db(painting_roi):
                 return None
 
+    def rectify_from_3d(self, painting_roi,coordinates,frame):
+        left, top, right, bottom = coordinates
+        try:
+            # Check if the painting is in db
+            ranked_list, dst_points, src_points = self.retrieve.retrieve(
+                painting_roi)
+            image_3d_warped = rectify_3d_with_db(painting_roi, ranked_list, dst_points, src_points)
+            if image_3d_warped is None:
+                return None
+            else:
+                #cambiamento = cv2.add(frame,image_3d_warped)
+                #cv2.imshow("Immagine sull'originale",cambiamento)
+                frame[top:top+image_3d_warped[0],left:left+image_3d_warped[1],:] = image_3d_warped
+                cv2.imshow("frame_warpato",frame)
+                return image_3d_warped
+        except TypeError:
+            # print("Painting not found in Database")
+            if not rectify_without_db(painting_roi):
+                return None
+
 
 def rectify_without_db(painting_roi) -> bool:
     return None
@@ -75,6 +95,7 @@ def rectify_with_db(painting_roi, ranked_list, dst_points, src_points) -> bool:
             return None
         painting_roi = cv2.warpPerspective(
             painting_roi, H, (w_match, h_match))
+        #rectify_from_3d(src_points, dst_points, match, painting_roi)  # ----------------------------------------------------------#
         print("[SUCCESS] Warped from keypoints")
         show_img(painting_roi)
     return True
@@ -110,3 +131,32 @@ def show_img(img):
     cv2.resizeWindow("Painting rectification", int(
         img.shape[1] / 2), int(img.shape[0] / 2))
     cv2.waitKey(0)
+
+
+
+
+def rectify_3d_with_db(painting_roi, ranked_list, dst_points, src_points) -> bool:
+    best = max(ranked_list, key=ranked_list.get)
+    match = cv2.imread(best)
+
+    h_match = int(match.shape[0])
+    w_match = int(match.shape[1])
+
+    src_points = np.squeeze(src_points, axis=1).astype(np.float32)
+    dst_points = np.squeeze(dst_points, axis=1).astype(np.float32)
+    src_points = np.array(utils.remove_points_outside_roi(
+        src_points, w_match, h_match))
+
+    if src_points.shape[0] < 4:
+        return None
+    else:
+        H, _ = cv2.findHomography(dst_points, src_points, cv2.RANSAC, 5.0)
+        if H is None:
+            print("[ERROR] Homography matrix can't be estimated. Rectification aborted.")
+            return None
+        img_dataset_warped = cv2.warpPerspective(match, H, (painting_roi.shape[1], painting_roi.shape[0]))
+
+        print("[SUCCESS] Warped from keypoints")
+        show_img(img_dataset_warped)
+        return img_dataset_warped
+
