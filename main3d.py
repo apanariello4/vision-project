@@ -6,8 +6,6 @@ from darknet_yolo.darknet_pytorch import Darknet
 from utils import resize_when_too_big, is_roi_outside_frame
 
 
-
-
 def show_img(img):
     """
     If there is a matched image, the function shows it on screen
