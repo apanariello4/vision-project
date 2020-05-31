@@ -1,1 +1,10 @@
 \section{People Localization}
+Our approach to achieve this task is based on the quality of the detection and painting retrieval. In fact, if our trained model correctly detect a person, in order to localize that person, we use informations about the paintings detected by the model and retrieved from the database.
+
+\subsection{Evaluation}
+We have access to the paintings\_db, with informations about the room where each painting is located, and this could make you think that our solution is optimal. Unfortunately, there are two main problems that worsen our evaluation:
+
+\begin{enumerate}[label=\alph*)]
+	\item \label{retrieval_case} The painting retrieval almost performs a random choice when a painting is in the database.
+    \item \label{painting_other_room} We do not take into account the scenario in which the camera and the person are in a room, while a detected painting is in another room, visible through a door.
+\end{enumerate}
