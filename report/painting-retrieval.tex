@@ -1,5 +1,13 @@
 \section{Painting Retrieval}
-Painting retrieval uses ORB \cite{orb} keypoints detector and descriptor to find matches between two images. ORB, aka "Oriented FAST and Rotated BRIEF", is at two orders of magnitude faster than the old used SIFT \cite{sift} and this is the main reason why we have chosen to use this method, in order to achieve the painting retrieval with a good performance/results ratio.
+Painting retrieval uses ORB \cite{orb} keypoints detector and descriptor to find matches between two images. ORB, is at two orders of magnitude faster than the old used SIFT \cite{sift} and this is the main reason why we have chosen to use this method, in order to achieve the painting retrieval with a good performance/results ratio.
+An example of retrieval is shown in fig. \ref{fig:retrieval_ex}.
+\begin{figure}[h!]
+  \centering
+      \includegraphics[width=0.4\textwidth]{pictures/painting_retrieval/retrieval}
+  \caption{example of painting retrieval}
+  \label{fig:retrieval_ex}
+\end{figure}
+
 \subsection{Improvements}
 To improve the retrieval and to reduce false matches, we used the ratio test described in Lowe's paper \cite{sift}, in order to get the best matches. Given the two best matches (the best match and the second best match) for a keypoint, we define a \(threshold\) and if the ratio between the distance of the two best matches, respectively \(d_1\) and \(d_2\), is above that threshold, \(\frac{d_1}{d_2}>threshold\), we reject that keypoint, considering it equivalent to noise and because the best match is not so different from the second one. 
 
@@ -26,12 +34,12 @@ For the remaining 221 paintings, we manually counted every time we saw a wrong o
   \multicolumn{1}{c|}{\textbf{\begin{tabular}[c]{@{}c@{}}Wrong or\\ not found\end{tabular}}} \\ \cline{2-4} 
 \multicolumn{1}{c|}{} &
   \multicolumn{1}{c|}{\textbf{In DB}} &
-  \multicolumn{1}{c|}{\cellcolor[HTML]{34FF34}58} &
-  \multicolumn{1}{c|}{\cellcolor[HTML]{FE0000}60} \\ \cline{2-4} 
+  \multicolumn{1}{c|}{58} &
+  \multicolumn{1}{c|}{60} \\ \cline{2-4} 
 \multicolumn{1}{c|}{\multirow{-3.5}{*}{\rotatebox[origin=c]{90}{\textit{Paintings}}}} &
   \multicolumn{1}{c|}{\textbf{Not in DB}} &
-  \multicolumn{1}{c|}{\cellcolor[HTML]{FE0000}47} &
-  \multicolumn{1}{c|}{\cellcolor[HTML]{34FF34}56} \\ \cline{2-4} 
+  \multicolumn{1}{c|}{47} &
+  \multicolumn{1}{c|}{56} \\ \cline{2-4} 
 \end{tabular}
 \caption{Painting retrieval evaluation results}
 \label{tab:retrieval_eval}
@@ -39,5 +47,5 @@ For the remaining 221 paintings, we manually counted every time we saw a wrong o
     
 The result is that 58 out of 221 paintings were in the database and they were correctly retrieved from it, 56 out of 221 were not in the database but the retrieval correctly gave us a no match found. The remaining paintings are the ones that were wrongly retrieved from the database, 60, and the ones that had not an instance in the database but a wrong match was uncorrectly found.
 
-Accuracy is the measurements used to get information on how good our configuration is: \[ Accuracy = \frac{58+56}{221} \approx 0.52 \]
+Accuracy is the measurement used to get information on how good our configuration is: \[ Accuracy = \frac{58+56}{221} \approx 0.52 \]
 We think that this result is pretty good, based on the fact that we could increase the real matched paintings, reducing the uncorrectly found paintings that were not actually in the database, adding them manually to it.
