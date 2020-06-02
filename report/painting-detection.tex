@@ -1,4 +1,35 @@
-\section{Painting Detection}
+\section{Detection}
+
+
+\begin{table*}[p]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \multicolumn{5}{|c|}{\textbf{Detection   Performance}}  \\ \hline
+    \multicolumn{1}{|l|}{} & \textbf{Painting} & \textbf{Statue} & \textbf{Person} & \textbf{Overall} \\ \hline
+    \textbf{TP}        & 520     & 222     & 70      & 812  \\ \hline
+    \textbf{FP}        & 133     & 18      & 28      & 179  \\ \hline
+    \textbf{Precision} & 79.63\% & 92.50\% & 71.42\% & 82\% \\ \hline
+    \textbf{Recall}    & -       & -       & -       & 85\% \\ \hline
+    \textbf{IoU}       & -       & -       & -       & 70\% \\ \hline
+    \end{tabular}
+    \caption{This table show the percentage of localization and errors in the detections for the three categories.}
+    \label{tab:tabella_detection_performance}
+    \end{table*}
+
+    \begin{table}[]
+        \centering
+        \begin{tabular}{|c|c|}
+        \hline
+        \textbf{Class} & \textbf{AP}      \\ \hline
+        Painting       & 98.09\%          \\ \hline
+        Statue         & 95.96\%          \\ \hline
+        Person         & 39.49\%          \\ \hline
+        \textbf{mAP}   & \textbf{77.85\%} \\ \hline
+        \end{tabular}
+        \caption{Table of Average Precision and Mean Average Precision}
+        \label{tab:tabella_average_precision}
+        \end{table}
 
 \begin{figure}
     \centering
@@ -6,6 +37,8 @@
     \caption{This graph represent the train phase of the Neural Network Yolo pre-trained with the dataset Coco and re-trained with our own custom objects, evaluated on the validation set.}
     \label{fig:figura1}
 \end{figure}
+
+
 
 \begin{figure}
     \centering
