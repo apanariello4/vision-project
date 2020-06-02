@@ -9,7 +9,7 @@ An example of retrieval is shown in fig. \ref{fig:retrieval_ex}.
 \end{figure}
 
 \subsection{Improvements}
-To improve the retrieval and to reduce false matches, we used the ratio test described in Lowe's paper \cite{sift}, in order to get the best matches. Given the two best matches (the best match and the second best match) for a keypoint, we define a \(threshold\) and if the ratio between the distance of the two best matches, respectively \(d_1\) and \(d_2\), is above that threshold, \(\frac{d_1}{d_2}>threshold\), we reject that keypoint, considering it equivalent to noise and because the best match is not so different from the second one. 
+To improve the retrieval and to reduce false matches, we used the ratio test described in Lowe's paper \cite{sift}, in order to get the best matches. Given the two best matches (the best match and the second best match) for a keypoint, we define a \(threshold\) and if the ratio between the distance of the two best matches, respectively \(d_1\) and \(d_2\), is above that threshold, \(\frac{d_1}{d_2}>threshold\), we reject that keypoint, considering it equivalent to noise and because the best match is not so different from the second one.
 
 Our goal was to keep the number of paintings correctly found in the database high but at the same time, not decreasing the number of correctly not found paintings that are not in the database. We have chosen \(threshold = 0.6\) because increasing it even by just 0.1, although it decreased the number of positive answer to paintings not listed in the database, this resulted in an increasing number of wrong matches for the paintings in the database. Decreasing the threshold led to an opposite situation and both of the cases didn't meet our goal.
 
