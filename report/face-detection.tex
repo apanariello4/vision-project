@@ -9,7 +9,7 @@ We used Haar Cascade classifiers proposed by Paul Viola and Michael Jones in the
 	\item \label{Face not found} Face not found
 \end{enumerate}
 
-\begin{figure}
+\begin{figure}[h!]
     \centering
         \includegraphics[width=0.2\textwidth]{pictures/face_detection/face_det2}
     \caption{the case in which the face detector correctly found a face from the person ROI}
@@ -17,7 +17,7 @@ We used Haar Cascade classifiers proposed by Paul Viola and Michael Jones in the
 \end{figure}
 
 In case \ref*{Eyes found}, if the face is found with its eyes, we assume that the person is facing the camera and there is no painting behind it, like in fig. \ref{fig:Eyes}.
-\begin{figure}
+\begin{figure}[h!]
     \centering
         \includegraphics[width=0.3\textwidth]{pictures/face_detection/face_det1}
     \caption{the case where the face detector can't find the face}
@@ -30,20 +30,16 @@ The assumptions we've made, have allowed us to model most of the possible cases,
 
 After all of these reductions, we analyzed a total of 84 frames with 94 people inside it. The evaluation results are shown in table \ref{tab:face_detection_eval} and gave us an accuracy of: \[Accuracy = \frac{14+57}{94} \approx 0.85\]
 
-Looking better, however, we saw that by computing the recall and precision as:
-\[Precision = \frac{14}{14+10} \approx 0.58\]
-\[Recall = \frac{14}{14+13} \approx 0.52\]
-
 \begin{table}[]
     \centering
     \begin{tabular}{cccc}
                           &                                    & \multicolumn{2}{c}{\textit{Facing painting}}                                                      \\ \cline{3-4} 
                           & \multicolumn{1}{c|}{}              & \multicolumn{1}{c|}{\textbf{True}}              & \multicolumn{1}{c|}{\textbf{False}}             \\ \cline{2-4} 
-    \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{\textbf{True}} & \multicolumn{1}{c|}{\cellcolor[HTML]{34FF34}14} & \multicolumn{1}{c|}{\cellcolor[HTML]{FE0000}10} \\ \cline{2-4} 
+    \multicolumn{1}{c|}{} & \multicolumn{1}{c|}{\textbf{True}} & \multicolumn{1}{c|}{14} & \multicolumn{1}{c|}{10} \\ \cline{2-4} 
     \multicolumn{1}{c|}{\multirow{-2}{*}{\textit{\begin{tabular}[c]{@{}c@{}}Face detector\\ answer\end{tabular}}}} &
       \multicolumn{1}{c|}{\textbf{False}} &
-      \multicolumn{1}{c|}{\cellcolor[HTML]{FE0000}13} &
-      \multicolumn{1}{c|}{\cellcolor[HTML]{34FF34}57} \\ \cline{2-4} 
+      \multicolumn{1}{c|}{13} &
+      \multicolumn{1}{c|}{57} \\ \cline{2-4} 
     \end{tabular}%
     \caption{Face detection results}
     \label{tab:face_detection_eval}
