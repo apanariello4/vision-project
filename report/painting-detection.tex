@@ -1,4 +1,4 @@
-\section{Detection}
+\subsection{Detection}
 
 \begin{figure}[h!]
     \centering
@@ -42,7 +42,7 @@ In the end we got a powerful neural network with high performance and capable of
     \label{fig:figura3}
 \end{figure}
 
-\subsection{Comparison with previous technique}
+\subsubsection{Comparison with previous technique}
 In a previous pipeline the detection was made without neural networks:
 the image was preprocessed and then we computed the edges with the Canny edge detector \cite{canny}. From the edges we took the signficant borders that identified the paintings and finally draw the region of interest around the borders. Despite this method worked well in the main scenery, it wasn't able to adapt to strong luminance variation and to manage the presence of shadows.
 The accuracy that was produced didn't satisfy the standard of the project, for this reason we choose to implement a neural network.
