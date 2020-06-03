@@ -272,7 +272,7 @@ class Darknet(nn.Module):
         self.seen = 0
         self.header_info = np.array([0, 0, 0, self.seen, 0], dtype=np.int32)
         self.path_to_labels = 'darknet_yolo/p_utils/obj.names'
-        self.load_darknet_weights("darknet_yolo/weights/yolov3-custom.weights")
+        self.load_darknet_weights("darknet_yolo/weights/yolov3-custom-3000.weights")
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
         self.eval().to(self.device)
