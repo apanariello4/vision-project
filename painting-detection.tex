@@ -1,4 +1,4 @@
-\subsection{Detection}
+\section{Detection}
 
 %\captionsetup[figure]{labelformat=empty}% redefines the caption setup of the figures environment in the beamer class.
 
@@ -8,14 +8,14 @@
         \includegraphics[width=0.4\textwidth]{pictures/painting_detection/training-v3.png}
     \caption{YOLOv3 trained on our custom dataset}
     \label{fig:training-v3}
-\end{figure}
+\end{figure} 
 
 \begin{figure}[h!]
     \centering
         \includegraphics[width=0.5\textwidth]{pictures/painting_detection/yolo-detection2.PNG}
     \caption{Detection with YOLOv3}
     \label{fig:yolo_detection}
-\end{figure}
+\end{figure} 
 
 
 \begin{figure*}[h]
@@ -102,9 +102,9 @@ In the end we got a powerful neural network with high performance (Figure \ref{f
 
 
 
-\subsubsection{Comparison with previous technique}
+\subsection{Comparison with previous technique}
 In a previous pipeline (see Figure \ref{fig:pipeline_detection}) the detection was made without neural networks: the image was at first time transformed in a grey level image then was preprocessed and the contours were computed. After the creation of the gray level image was applied an adaptive threshold in order to take the significant edge, then was used a median blur for removing the noise which affected the image and the last processing was made by the erosion and the dilation.
-The erosion and the dilation were combined together in order to create the opening, it was useful because with this technique the useless parts of the image were removed and the useful parts were increased.
+The erosion and the dilation were combined together in order to create the opening, it was useful because with this technique the useless parts of the image were removed and the useful parts were increased. 
 When the preprocessing was terminated the pipeline had used the result to compute the foreground and the background with the Connected Component Labeling (see: \cite{Grana_ccl}),
 After the image has been split in foreground and background the objects that achieved an entropy grater that a threshold was labeled as a painting and the bounding box was drawn.
 Despite this method worked well in the main scenery, it wasn't able to adapt to strong luminance variation and to manage the presence of shadows (Figure \ref{fig:innaccurate_detection}). Many times the shadow was recognized as an object or as a part of the painting and for this reason the IoU had performance not optimal and in some scenery very bad; for this reason we choose to implement a neural network.
