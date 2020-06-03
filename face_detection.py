@@ -26,15 +26,17 @@ class FaceDetectionClass():
             face_roi = gray_person_roi[y:y + h, x:x + w]
             eyes = self.eye_cascade.detectMultiScale(face_roi)
             end = time.time()
-            print("[INFO] The person is facing the camera. Time to detect the face: " + "%.2f" % (
-                    end - start) + " seconds")
             if len(eyes) != 0:
                 if draw:
                     for (ex, ey, ew, eh) in eyes:
                         cv2.rectangle(person_roi, (ex + x, ey + y), (ex + ew + x, ey + eh + y), (0, 255, 0), 2)
+                print("[INFO] The person is facing the camera. Time to detect the face: " + "%.2f" % (
+                        end - start) + " seconds")
                 self.show_img(person_roi)
                 return True
             else:
+                print("[INFO] The person is not facing the camera. Time to detect the face: " + "%.2f" % (
+                        end - start) + " seconds")
                 self.show_img(person_roi)
                 return False
         else:
@@ -46,6 +48,7 @@ class FaceDetectionClass():
     def is_facing_paintings(self, person_detection, paintings_detections, draw=False):
         if len(paintings_detections) <= 0:
             print("[INFO] There are no paintings near the person")
+            print("[INFO] The person is not facing any paintings")
             return False
         start = time.time()
 
@@ -113,5 +116,5 @@ class FaceDetectionClass():
         cv2.namedWindow("Face detection", cv2.WINDOW_KEEPRATIO)
         cv2.imshow("Face detection", img)
         cv2.resizeWindow("Face detection", int(img.shape[1] / 2), int(img.shape[0] / 2))
-        cv2.waitKey(10)
+        cv2.waitKey()
         cv2.destroyAllWindows()

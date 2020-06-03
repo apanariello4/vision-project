@@ -1,7 +1,24 @@
 \section{Detection}
 
+\begin{figure}[h!]
+    \centering
+        \includegraphics[width=0.4\textwidth]{pictures/painting_detection/training-v3.png}
+    \caption{YOLOv3 trained on our custom dataset}
+    \label{fig:training-v3}
+\end{figure}
 
-\begin{table*}[p]
+
+
+The detection of paintings and statues is done through a custom YOLOv3 neural network.\cite{yolov3}
+Yolo is an architecture that provides a new approach to object detection, a single neural network predicts bounding boxes and class probabilities directly from full images in one evaluation.
+In order to use this neural network we have labeled 1343 images, 805 of them have been used to train the network, 269 for the validation set and 269 for the test set, providing a total number of 3733 labels. The images of paintings and statues were taken by the frame extracted by some videos recorded in the Galleria Estense, for the person class was instead used a mix of labeled images taken from the previous videos and a some images of people in another museum.
+
+
+The training has been performed with darknet \cite{darknet} taking the mAP every 1000 iterations \ref{fig:training-v3}, this allowed us to take the best weights that weren't affected by overfitting.
+ %(AP=98.61\% for the class 'painting ', AP = 95.34\% for the class 'statue', AP = 34.08\% for the class 'person' and a final recall of 93.97\%).
+In the end we got a powerful neural network with high performance and capable of a good generalization.
+
+\begin{table*}[ht]
     \centering
     \begin{tabular}{|c|c|c|c|c|}
     \hline
@@ -13,60 +30,20 @@
     \textbf{Recall}    & -       & -       & -       & 85\% \\ \hline
     \textbf{IoU}       & -       & -       & -       & 70\% \\ \hline
     \end{tabular}
-    \caption{This table show the percentage of localization and errors in the detections for the three categories.}
-    \label{tab:tabella_detection_performance}
+    \caption{Detection performance}
+    \label{tab:detection_performance}
     \end{table*}
-
-    \begin{table}[]
-        \centering
-        \begin{tabular}{|c|c|}
-        \hline
-        \textbf{Class} & \textbf{AP}      \\ \hline
-        Painting       & 98.09\%          \\ \hline
-        Statue         & 95.96\%          \\ \hline
-        Person         & 39.49\%          \\ \hline
-        \textbf{mAP}   & \textbf{77.85\%} \\ \hline
-        \end{tabular}
-        \caption{Table of Average Precision and Mean Average Precision}
-        \label{tab:tabella_average_precision}
-        \end{table}
-
-\begin{figure}
-    \centering
-        \includegraphics[width=0.4\textwidth]{pictures/painting_detection/chartv4.png}
-    \caption{This graph represent the train phase of the Neural Network Yolo pre-trained with the dataset Coco and re-trained with our own custom objects, evaluated on the validation set.}
-    \label{fig:figura1}
-\end{figure}
-
-
-
-\begin{figure}
-    \centering
-        \includegraphics[width=0.5\textwidth]{pictures/painting_detection/tabella3.png}
-    \caption{This table show the percentage of localization and  errors in the detections for the three categories.}
-    \label{fig:figura2}
-\end{figure}
 
 \begin{figure}[h]
     \centering
         \includegraphics[width=0.4\textwidth]{pictures/painting_detection/tabella2.png}
-    \caption{Table of Average Precision and Mean Average Precision}
+    \caption{Average Precision and Mean Average Precision}
     %Histogram of Average Precision and Mean Average Precision
     \label{fig:figura3}
-\end{figure} 
+\end{figure}
 
-This part of the system allow the detection of painting and statue through the use of Yolo v4 (see Paper \cite{Yolov4}).
-Yolo is an architecture that provides a new approach to object detection, a single neural network predicts bounding boxes and class probabilities directly from full images in one evaluation. The version that has been used in this project is the last, released in the april 2020.
-In order to use this neural network have been recovered and labeled 1343 images, 805 of them have been used to train the network, 269 for the validation set and 269 for the test set, providing a total number of 3733 labels. The images of paintings and statues were taken by the frame extracted by some videos recorded in the Galleria Estense, they have been labeled with the Yolo tool and have been saved in Yolo format. For the class person was instead used a mix of handcrafted label given by the previous video and a small part belonging to another dataset which included people in a museum.
-
-The graph shown in Figure \ref{fig:figura1} illustrates the progress of the test phase in which, every 1000 iterations, has been computed the mAP in the valid set;this was done to take the best weights result which wasn't affected by overfitting.
-This approach has allowed to achieve high performance (see Figure \ref{fig:figura2} and Figure \ref{fig:figura3}) %(AP=98.61\% for the class 'painting ', AP = 95.34\% for the class 'statue', AP = 34.08\% for the class 'person' and a final recall of 93.97\%). 
-and has also provided a system capable to have many different applications with a good generalization.
-
-
-\subsection{Comparison with previous technique} 
-In a previous pipeline the task of detection was produced in another way.
-The system was focused on three main phases: in the first phase the frame %which belonged from the video
-was preprocessed and the edges were computed, then a function was used to find the contour of the object and with these contours were detected the region of interest. Despite this method worked well in the main scenery, it hasn't the capability to adapt to strong luminance variation and it wasn't able to manage very well the presence of shadows.
-The accuracy that was produced didn't satisfy the standard of the project, for this reason the pipeline was updated.
+\subsection{Comparison with previous technique}
+In a previous pipeline the detection was made without neural networks:
+the image was preprocessed and then we computed the edges with the Canny edge detector \cite{canny}. From the edges we took the signficant borders that identified the paintings and finally draw the region of interest around the borders. Despite this method worked well in the main scenery, it wasn't able to adapt to strong luminance variation and to manage the presence of shadows.
+The accuracy that was produced didn't satisfy the standard of the project, for this reason we choose to implement a neural network.
 
