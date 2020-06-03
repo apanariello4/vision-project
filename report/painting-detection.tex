@@ -5,7 +5,7 @@
         \includegraphics[width=0.4\textwidth]{pictures/painting_detection/training-v3.png}
     \caption{YOLOv3 trained on our custom dataset}
     \label{fig:training-v3}
-\end{figure} 
+\end{figure}
 
 \begin{figure}[]
     \centering
@@ -74,7 +74,7 @@ In the end we got a powerful neural network with high performance and capable of
 \textbf{AP}        & 97,29\% & 98,61\% & 75,45\% & -       \\ \hline
 \textbf{mAP}       & -       & -       & -       & 90,45\% \\ \hline
 \end{tabular}
-\caption{Detection Performance with YOLOv3} 
+\caption{Detection Performance with YOLOv3}
     \label{tab:detection_performance}
 \end{table*}
 
@@ -83,8 +83,8 @@ In the end we got a powerful neural network with high performance and capable of
 \subsubsection{Comparison with previous technique}
 In a previous pipeline the detection was made without neural networks:
 the image was at first time transformed in a grey level image then was preprocessed and the contours were computed. After the creation of the gray level image was applied an adaptive threshold (see:Figure \ref{fig:}) in order to take the significant edge, then was used a median blur for removing the noise which affected the image and the last processing was made by the erosion and the dilation.
-The erosion and the dilation were combined together in order to create the opening, it was useful because with this technique the useless parts of the image were removed and the useful parts were increased. 
-When the preprocessing was terminated the pipeline had used the result to compute the foreground and the background with the Connected Component Labeling (see: \cite{Grana_ccl}), the result is showed in the image 
+The erosion and the dilation were combined together in order to create the opening, it was useful because with this technique the useless parts of the image were removed and the useful parts were increased.
+When the preprocessing was terminated the pipeline had used the result to compute the foreground and the background with the Connected Component Labeling (see: \cite{Grana_ccl}), the result is showed in the image
 
 
 
