@@ -22,8 +22,8 @@ def erosion_dilation(img):
     kernel = np.ones((5, 5), np.uint8)
     img_erosion = cv2.erode(img, kernel, iterations=1)
     dilation = cv2.dilate(img_erosion, kernel, iterations=1)
-    img_erosion = cv2.erode(dilation, kernel, iterations=1)
-    return img_erosion
+#    img_erosion = cv2.erode(dilation, kernel, iterations=1)
+    return dilation
 
 def find (img):
     contours, hierarchy = cv2.findContours(
@@ -40,10 +40,10 @@ def labeling(img):
     cv2.imshow("medianBlur", medianBlur)
     post_proc = erosion_dilation(medianBlur)
     cv2.imshow("post_proc", post_proc)
-    erosion = cv2.erode(post_proc, kernel, iterations=1)
-    dialtion =  cv2.dilate(post_proc, kernel, iterations=2)
-    num_labels, labels_im = cv2.connectedComponentsWithAlgorithm(dialtion,connectivity=8,ltype=cv2.CV_32S,ccltype=cv2.CCL_GRANA)
+
+    num_labels, labels_im = cv2.connectedComponentsWithAlgorithm(post_proc,connectivity=8,ltype=cv2.CV_32S,ccltype=cv2.CCL_GRANA)
     labeled_image = draw_components(labels_im)
+    cv2.imshow("CCL", labeled_image )
 
     return labeled_image
 """

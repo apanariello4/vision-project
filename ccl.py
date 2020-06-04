@@ -23,7 +23,6 @@ def draw_components(labels):
 def image_segmentation(img):
     """
     """
-    blur = cv2.GaussianBlur(img, (5, 5), 0)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     gray = cv2.GaussianBlur(gray, ksize=(5, 5), sigmaX=10)
