@@ -51,10 +51,15 @@ def hough_contours(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     edges = auto_canny(gray)
     lines = cv2.HoughLinesP(edges, 1, np.pi/180, 100, np.array([]), 50, 5)
+    cv2.imshow("CANNY",edges)
+    cv2.waitKey()
 
     for line in lines:
         for x1, y1, x2, y2 in line:
             cv2.line(img, (x1, y1), (x2, y2), (20, 220, 20), 2)
+
+    cv2.imshow("lines", img)
+    cv2.waitKey()
     return img
 
 
@@ -169,11 +174,11 @@ def dram_multiple_contours(img, contours, max_contours=10, approximate=False):
         x, y, w, h = cv2.boundingRect(c[i])
         crop_image(img, (x, y, w, h))
 
-        entropy = (histogram(
-            crop_image(image_entropy, (x, y, w, h))))
+        entropy_computed = (entropy(histogram(
+            crop_image(image_entropy, (x, y, w, h)))))
         print(overlap_area)
 
-        if entropy > 0:
+        if entropy_computed > 7:
             if not overlap(overlap_area, (x, y, w, h), i):
 
                 print(overlap(overlap_area, (x, y, w, h), i))

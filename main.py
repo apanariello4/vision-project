@@ -36,7 +36,7 @@ def compute_HTRDC(img, k):
 def main():
     # Create a VideoCapture object and read from input file
     # If the input is the camera, pass 0 instead of the video file name
-    video_path = "videos/VIRB0392.MP4"
+    video_path = "videos/GOPR2048.MP4"
     # cap = cv2.VideoCapture("videos/VIRB0392.MP4")
     # cap.set(1, 700)
     cap = cv2.VideoCapture(video_path)
@@ -92,12 +92,11 @@ def main():
                                      int(left):int(right)]
 
                     print("[INFO] Painting detected")
-                    cv2.rectangle(bb_frame, (left, bottom+10),
-                                  (left+50, bottom+10), )
-                    cv2.imshow("frame", bb_frame)
-                    cv2.waitKey()
 
-                    rectify.rectify(painting)
+                    cv2.imshow("frame", bb_frame)
+                    cv2.waitKey(2)
+
+                    #rectify.rectify(painting)
                 if detection[0] == 'painting' and len(detections_list) == 1:
                     # It founds only one painting, the roi can be outside frame
 
