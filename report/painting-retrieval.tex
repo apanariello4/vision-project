@@ -4,7 +4,7 @@ An example of retrieval is shown in fig. \ref{fig:retrieval_ex}.
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.4\textwidth]{pictures/painting_retrieval/retrieval}
-    \caption{example of painting retrieval}
+    \caption{Example of painting retrieval.}
     \label{fig:retrieval_ex}
 \end{figure}
 
@@ -15,7 +15,7 @@ Our goal was to keep the number of paintings correctly found in the database hig
 
 Computing the same keypoints and descriptors for the same paintings in the database has resulted in a slow start, causing the retrieval to wait a couple of seconds or more. Computing the keypoints and descriptors offline and loading them at retrieval time, reduced the retrieval initialization by more than 40\%.
 
-\subsection{Evaluation}
+\subsubsection{Evaluation}
 To evaluate the retrieval, we tested it with a sample of 3 random frames per video, with a total of 100 randomly selected videos out of 208. Some of these frames either did not contain any frames or the region of interest of the paintings exceeded the frame size, therefore 100 frames out of the total of 300 were discarded. 266 are the total paintings detected using our trained model and 45 of these were discarded because they were unrecognizable, due to their small size and/or their brightness.
 For the remaining 221 paintings, we manually counted every time we saw a wrong or a right answer. More precisely, we checked if the painting was in the database and the correctness retrieval answer, building the matrix in table \ref{tab:retrieval_eval}.
 
@@ -44,7 +44,7 @@ For the remaining 221 paintings, we manually counted every time we saw a wrong o
         \multicolumn{1}{c|}{47} &
         \multicolumn{1}{c|}{56} \\ \cline{2-4}
     \end{tabular}
-    \caption{Painting retrieval evaluation results}
+    \caption{Painting retrieval evaluation results.}
     \label{tab:retrieval_eval}
 \end{table}
 
