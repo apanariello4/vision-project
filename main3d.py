@@ -19,11 +19,11 @@ def show_img(img):
 
 detect = Darknet()
 
-for file in glob.glob("resources/3d_screenshots/*.PNG"):
+for file in glob.glob("3d_screenshots/*.PNG"):
 
     frame = cv2.imread(file)
-    # frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
-    frame = cv2.flip(frame, 1)
+    #frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+    #frame = cv2.flip(frame, 1)
     frame_width = frame.shape[1]
     frame_height = frame.shape[0]
     ######### DETECTION
@@ -46,3 +46,4 @@ for file in glob.glob("resources/3d_screenshots/*.PNG"):
 
             coordinates = left, top, right, bottom
             image_3d_warped = rectify.rectify_from_3d(painting, coordinates, frame)
+
