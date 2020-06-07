@@ -1,7 +1,8 @@
 \subsection{Painting Retrieval}
 Painting retrieval uses ORB \cite{orb} keypoints detector and descriptor to find matches between two images. ORB, is at two orders of magnitude faster than the old used SIFT \cite{sift} and this is the main reason why we have chosen to use this method, in order to achieve the painting retrieval with a good performance/results ratio.
 An example of retrieval is shown in fig. \ref{fig:retrieval_ex}.
-\begin{figure}[h!]
+
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.4\textwidth]{pictures/painting_retrieval/retrieval}
     \caption{Example of painting retrieval.}
@@ -19,10 +20,6 @@ Computing the same keypoints and descriptors for the same paintings in the datab
 To evaluate the retrieval, we tested it with a sample of 3 random frames per video, with a total of 100 randomly selected videos out of 208. Some of these frames either did not contain any frames or the region of interest of the paintings exceeded the frame size, therefore 100 frames out of the total of 300 were discarded. 266 are the total paintings detected using our trained model and 45 of these were discarded because they were unrecognizable, due to their small size and/or their brightness.
 For the remaining 221 paintings, we manually counted every time we saw a wrong or a right answer. More precisely, we checked if the painting was in the database and the correctness retrieval answer, building the matrix in table \ref{tab:retrieval_eval}.
 
-% Please add the following required packages to your document preamble:
-% \usepackage{multirow}
-% \usepackage[table,xcdraw]{xcolor}
-% If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
 \begin{table}
     \centering
     \begin{tabular}{cccc}
