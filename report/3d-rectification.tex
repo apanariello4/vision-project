@@ -1,10 +1,11 @@
-\subsection{3D Rectification}
+\subsection{Painting rectification of the 3D model}
 
+For the painting rectification of the 3D model, we manage to replace the low quality painting images with a rectified version of the same paintings in higher quality, retrieved from the database. Given a screenshot from the 3D model, it goes through the first part of our pipeline until the correspondent painting is found. The retrieved painting is subject to a projective transformation, with an inverse process w.r.t our main pipeline, in order for it to have the same projection as the painting in the screenshot. It is, then, replaced in the screenshot with the use of a mask. If the painting is not found, the warping is not performed. An example can be seen in fig.~\ref{fig:3d-warping}.
 
 \begin{figure}[h!]
   \centering
   \resizebox{0.45\textwidth}{!}{
-  \resizebox{0.8\textwidth}{!}{\minipage{0.3\textwidth}
+  \resizebox{0.809\textwidth}{!}{\minipage{0.3\textwidth}
       \includegraphics[width=\linewidth]{pictures/painting_detection/3d_rectification_original.PNG}
       \caption*{Original 3D model painting}\label{fig:rectification_original}
     \endminipage\hfill}
@@ -16,5 +17,5 @@
 \end{figure}
 
 
-The 3D Rectification is the last optional task we've been achieved. The goal was to replace the painting from a 3D model's view with the same painting but with an higher resolution, retrieved from the database. Given some screenshots from the 3D model, we identify, through our trained network, all the paintings ROIs and each of them is compared with all the paintings in the database. The retrieved painting is first warped with an homographic trasformation, in order to be in the same perspective of the painting in the screenshot, and then it is replaced instead of the original painting. If the painting is not found, the warping is not performed. An example of our approach is shown in fig.~\ref{fig:3d-warping}.
+
 
