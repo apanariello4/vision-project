@@ -38,14 +38,7 @@ class RectifyClass():
             ranked_list, dst_points, src_points = self.retrieve.retrieve(
                 painting_roi)
             image_3d_warped = rectify_3d_with_db(painting_roi, ranked_list, dst_points, src_points)
-            if image_3d_warped is None:
-                return None
-            else:
-                #cambiamento = cv2.add(frame,image_3d_warped)
-                #cv2.imshow("Immagine sull'originale",cambiamento)
-                frame[top:top+image_3d_warped[0],left:left+image_3d_warped[1],:] = image_3d_warped
-                cv2.imshow("frame_warpato",frame)
-                return image_3d_warped
+
         except TypeError:
             # print("Painting not found in Database")
             if not rectify_without_db(painting_roi):
@@ -157,6 +150,10 @@ def rectify_3d_with_db(painting_roi, ranked_list, dst_points, src_points) -> boo
         img_dataset_warped = cv2.warpPerspective(match, H, (painting_roi.shape[1], painting_roi.shape[0]))
 
         print("[SUCCESS] Warped from keypoints")
+
+
+        mask = np.all(img_dataset_warped == [0, 0, 0], axis=-1)
+        img_dataset_warped[mask] = painting_roi[mask]
         show_img(img_dataset_warped)
         return img_dataset_warped
 

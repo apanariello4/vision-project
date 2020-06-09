@@ -43,3 +43,4 @@ report/metafiles
 *.synctex.gz
 *.bcf
 *.xml
+out
