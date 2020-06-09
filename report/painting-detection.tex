@@ -36,12 +36,15 @@
 
 
 
-The detection of paintings, statues and person is done through a custom YOLOv3 neural network~\cite{yolov3}.
-Yolo is an architecture that provides a new approach to object detection, a single neural network predicts bounding boxes and class probabilities directly from full images in one evaluation.
+The detection of paintings, statues and people is done through a custom YOLOv3 neural network~\cite{yolov3}.
+Yolo is an architecture that provides a new approach to object detection, in which a single neural network predicts bounding boxes and class probabilities directly from full images in one evaluation.
+
 In order to use this neural network we have labeled 1343 images, 805 of them have been used to train the network, 269 for the validation set and 269 for the test set, providing a total number of 3733 labels. The images of paintings and statues were taken from frames extracted by some videos recorded in the Galleria Estense, for the person class was instead used a mix of images taken from the previous videos and some images of people in another museum to increase generalization.
-In the fig.~\ref{fig:training-v3} is showed the training that has been performed with darknet~\cite{darknet} in which has been performed the mAP every 1000 iterations in order to take the best weights that weren't affected by overfitting.
-In the end we got a powerful neural network with high performance and capable of a good generalization, one of the detection result can be seen in the fig.~\ref{fig:yolo_detection} instead the performance are showed in the tab.~\ref{tab:detection_performance}.
-An important point is the data management: the train set, the validation set and the test set have been balanced, this allowed the network to have a better performance and predict classes in a correct way.
+Fig.~\ref{fig:training-v3} shows the graph for the training that has been performed with darknet~\cite{darknet} in which we took the mAP every 1000 iterations in order to have the best weights that weren't affected by overfitting.
+
+In the end we got a powerful neural network with high performance and capable of a good generalization, a result of the detection can be seen in fig.~\ref{fig:yolo_detection} while the performance is shown in tab.~\ref{tab:detection_performance}.
+
+An important point is the data management: the train set, the validation set and the test set have been balanced with a 60/20/20 split, this allowed the network to have a better performance and to predict classes in a correct way.
 
 
 
@@ -66,8 +69,9 @@ An important point is the data management: the train set, the validation set and
 
 
 \subsubsection{Comparison with previous technique}
-In a previous pipeline (showed in fig.~\ref{fig:pipeline_detection}) the detection was made without neural networks: the image was at first transformed in a gray level image, preprocessed with adaptive threshold, median blur \cite{median-blur} to remove the noise and opening, and then compute the borders.
+In a previous pipeline (showed in fig.~\ref{fig:pipeline_detection}) the detection was made without neural networks: the image was at first transformed in a gray level image, preprocessed with adaptive threshold, median blur \cite{median-blur} to remove the noise and opening, and then we computed the borders.
 After the preprocessing, the pipeline uses the result to compute the Connected Component Labeling~\cite{Grana_ccl} to label the background and the foreground objects.
 In order to label the foreground objects as paintings, the components needed to have an entropy grater than a threshold, and then the bounding boxes were drawn.
-Despite this method worked well in some scenarios, it wasn't able to adapt to strong luminance variation, to manage the presence of shadows and to generalize with all the classes, as we can see in the fig~\ref{fig:innaccurate_detection}. Many times the shadow was recognized as an object or as part of the painting and for this reason the IoU was computed with not optimal performance, this reason led us to choose to implement a neural network.
+
+Despite this method worked well in some scenarios, it wasn't able to adapt to strong luminance variation, to manage the presence of shadows and to generalize with all the classes. As we can see in fig~\ref{fig:innaccurate_detection}, the two big paintings are correctly detected, while the statue and the lower right painting are merged in a single bounding box since their borders overlap. Many times the shadow was recognized as part of the painting and for this reason the IoU was not precise enough, this led us to choose the neural network approach.
 
