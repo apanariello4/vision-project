@@ -1,37 +1,70 @@
 \section*{Additional Resources}
 
-\begin{figure}[h!]
+\begin{figure*}[ht!]
   \centering
-  \resizebox{1\textwidth}{!}{
-    \centering
-    \resizebox{0.6\textwidth}{!}{
-      \minipage{0.3\textwidth}
+      \begin{subfigure}[t]{0.3\textwidth}
         \includegraphics[width=\linewidth]{pictures/painting_detection/Frame.png}
         \caption*{Frame from video}\label{fig:Frame}
-      \endminipage\hfill
-      \minipage{0.3\textwidth}
+      \end{subfigure}\hfill
+      \begin{subfigure}[t]{0.3\textwidth}
         \includegraphics[width=\linewidth]{pictures/painting_detection/2-adaptive_threshold.PNG}
         \caption*{Adaptive threshold}\label{fig:adaptive_threshold}
-      \endminipage\hfill
-      \minipage{0.3\textwidth}%
+      \end{subfigure}\hfill
+      \begin{subfigure}[t]{0.3\textwidth}%
         \includegraphics[width=\linewidth]{pictures/painting_detection/3-median_blur.PNG}
         \caption*{Median blur}\label{fig:median_blur}
-      \endminipage}
-      \centering
-      \resizebox{0.6\textwidth}{!}{
-      \minipage{0.3\textwidth}
+      \end{subfigure}
+      \\
+      \begin{subfigure}[b]{0.3\textwidth}
         \includegraphics[width=\linewidth]{pictures/painting_detection/4-opening.PNG}
         \caption*{Opening}\label{fig:opening}
-      \endminipage\hfill
-      \minipage{0.3\textwidth}
+      \end{subfigure}\hfill
+      \begin{subfigure}[b]{0.3\textwidth}
       \captionsetup{font=small}
         \includegraphics[width=\linewidth]{pictures/painting_detection/5-ccl.PNG}
         \caption*{Connected Component Labeling}\label{fig:ccl}
-      \endminipage\hfill
-      \minipage{0.3\textwidth}%
+      \end{subfigure}\hfill
+      \begin{subfigure}[b]{0.3\textwidth}%
         \includegraphics[width=\linewidth]{pictures/painting_detection/6-bbox.PNG}
         \caption*{Painting Detection}\label{fig:bbox}
-      \endminipage}}
-      \captionsetup{justification=centering}
+      \end{subfigure}
       \caption{Detection pipeline without neural network.} \label{fig:pipeline_detection}
-  \end{figure}
+  \end{figure*}
+
+%\section*{Additional Resources}
+
+% \begin{figure}[h!]
+%   \centering
+%   \resizebox{1\textwidth}{!}{
+%     \centering
+%     \resizebox{0.6\textwidth}{!}{
+%       \minipage{0.3\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/painting_detection/Frame.png}
+%         \caption*{Frame from video}\label{fig:Frame}
+%       \endminipage\hfill
+%       \minipage{0.3\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/painting_detection/2-adaptive_threshold.PNG}
+%         \caption*{Adaptive threshold}\label{fig:adaptive_threshold}
+%       \endminipage\hfill
+%       \minipage{0.3\textwidth}%
+%         \includegraphics[width=\linewidth]{pictures/painting_detection/3-median_blur.PNG}
+%         \caption*{Median blur}\label{fig:median_blur}
+%       \endminipage}
+%       \centering
+%       \resizebox{0.6\textwidth}{!}{
+%       \minipage{0.3\textwidth}
+%         \includegraphics[width=\linewidth]{pictures/painting_detection/4-opening.PNG}
+%         \caption*{Opening}\label{fig:opening}
+%       \endminipage\hfill
+%       \minipage{0.3\textwidth}
+%       \captionsetup{font=small}
+%         \includegraphics[width=\linewidth]{pictures/painting_detection/5-ccl.PNG}
+%         \caption*{Connected Component Labeling}\label{fig:ccl}
+%       \endminipage\hfill
+%       \minipage{0.3\textwidth}%
+%         \includegraphics[width=\linewidth]{pictures/painting_detection/6-bbox.PNG}
+%         \caption*{Painting Detection}\label{fig:bbox}
+%       \endminipage}}
+%       \captionsetup{justification=centering}
+%       \caption{Detection pipeline without neural network.} \label{fig:pipeline_detection}
+%   \end{figure}
