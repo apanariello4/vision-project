@@ -12,8 +12,9 @@
       \includegraphics[width=\linewidth]{pictures/painting_detection/3d_rectification_warped.PNG}
       \caption*{Replaced painting}\label{fig:rectification_warped}
     \endminipage\hfill}}
-    \caption{Painting rectification from the 3D view}\label{fig:3d-warping}
+    \caption{Painting rectification from the 3D view.}\label{fig:3d-warping}
 \end{figure}
 
 
-The 3D Rectification is the last optional task that has been done. The scope was to replace the painting that was present in a 3D model with the same painting but with an higher resolution. Have been taken some screenshot of the 3D model with an off-line approach, then were extracted all the ROI that were present in the acquired image and each painting of the model was confronted with all the painting in our database. The painting identified was first warped with an homography trasformation in order to be in the same prospective of the painting in the screenshot and then was replaced with the previous one; in case of mismatch nothing was done. One of the results that has been achieved is showed in the fig.~\ref{fig:3d-warping}.
+The 3D Rectification is the last optional task we've been achieved. The goal was to replace the painting from a 3D model's view with the same painting but with an higher resolution, retrieved from the database. Given some screenshots from the 3D model, we identify, through our trained network, all the paintings ROIs and each of them is compared with all the paintings in the database. The retrieved painting is first warped with an homographic trasformation, in order to be in the same perspective of the painting in the screenshot, and then it is replaced instead of the original painting. If the painting is not found, the warping is not performed. An example of our approach is shown in fig.~\ref{fig:3d-warping}.
+

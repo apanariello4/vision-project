@@ -2,6 +2,8 @@
 
 \begin{figure}[h!]
   \centering
+  \resizebox{1\textwidth}{!}{
+    \centering
     \resizebox{0.6\textwidth}{!}{
       \minipage{0.3\textwidth}
         \includegraphics[width=\linewidth]{pictures/painting_detection/Frame.png}
@@ -15,7 +17,7 @@
         \includegraphics[width=\linewidth]{pictures/painting_detection/3-median_blur.PNG}
         \caption*{Median blur}\label{fig:median_blur}
       \endminipage}
-
+      \centering
       \resizebox{0.6\textwidth}{!}{
       \minipage{0.3\textwidth}
         \includegraphics[width=\linewidth]{pictures/painting_detection/4-opening.PNG}
@@ -29,6 +31,7 @@
       \minipage{0.3\textwidth}%
         \includegraphics[width=\linewidth]{pictures/painting_detection/6-bbox.PNG}
         \caption*{Painting Detection}\label{fig:bbox}
-      \endminipage}
+      \endminipage}}
+      \captionsetup{justification=centering}
       \caption{Detection pipeline without neural network.} \label{fig:pipeline_detection}
   \end{figure}
