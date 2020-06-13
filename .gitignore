@@ -17,7 +17,6 @@ descriptors_db
 *.glb
 mainfab.py
 images
-3d_screenshots
 report/metafiles
 *.aux
 *.glo
@@ -42,3 +41,6 @@ report/metafiles
 *.mtc1
 *.out
 *.synctex.gz
+*.bcf
+*.xml
+out

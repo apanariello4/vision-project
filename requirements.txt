@@ -7,4 +7,3 @@ torchvision
 scikit-image
 pandas
 tqdm
-gltflib

@@ -1,0 +1,19 @@
+\section{Results}
+In this work we were able to train a neural network with high performance to detect paintings, people and statues with a $mAP$ of $90.45\%$. This is a great result for a custom network and a not so large dataset. The neural network detection lays the foundation for all the subsequent steps of the pipeline, having a good performance in the first step is the key to have a good performance also in other steps.
+
+The painting retrieval is our bottleneck since it is able to correctly retrieve paintings just in the $52\%$ of the cases, this is also due to the fact that not every painting is in the database and the bad luminance and projective condition of some frames.
+
+Regarding the painting rectification and people localization, these performance are strictly tied to the previous step since, when the retrieval is correct, this step works without flaws.
+
+The face detection, which is performed in order to determine if a person is facing a painting or not, exploits the detection of a person, this means that it has an $AP$ of $75.45\%$ as we can see in tab.~\ref{tab:detection_performance}. On these detections we are able to verify if a person is facing a painting with an accuracy of $85\%$, as we can see in tab.~\ref{tab:face_detection_eval}, using a classic computer vision algorithm without the use of neural networks.
+
+In the last step, the rectification of paintings of the 3D model is performed, using the same pipeline as before with a change in the rectification step. The performance of this step are the same as the rectification in 2D frames.
+
+\section{Discussion}
+In this project we compared the performance of classic computer vision algorithms and neural networks. The neural network we have trained, greatly outperforms our implementation of CCL~\cite{Grana_ccl} or thresholding algorithms. While these algorithms could have been optimized with some parameters tweaking, the deep learning approach is faster to implement, once a dataset is available, and is able to generalize much better.
+
+In all the steps, except the detection step, classical algorithms were used, such as descriptors, projective transformation, face detector and so on. Not using neural networks in these steps, allowed us to have better computing performance and a faster pipeline, this would not have been possible if we only used deep learning.
+
+Moreover, in steps such as painting retrieval, the use of a neural network would have been impractical, since it would have been impossible to obtain an exhaustive dataset of paintings, we only had one image per painting.
+
+In conclusion, the combined use of both classical and deep learning algorithms is inevitable to achieve optimal performance and to solve some tasks that otherwise would have been impossible.
