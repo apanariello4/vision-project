@@ -1,17 +1,13 @@
 import os
-
-import numpy as np
 from cv2 import cv2
-
 import painting_detection
-from ccl import draw_components, image_segmentation
 from darknet_yolo.darknet_pytorch import Darknet
 from htrdc import HTRDC, undistort
-from people_detection import DetectNet
 from painting_rectification import RectifyClass
 from painting_retrieval import RetrieveClass
 from face_detection import FaceDetectionClass
-from utils import resize_when_too_big, is_roi_outside_frame, equalize_luma
+from people_localization import LocalizeClass
+from utils import is_roi_outside_frame, show_img
 
 HTRDC_K_START = 0.0
 HTRDC_K_END = 1e-4
@@ -36,7 +32,7 @@ def compute_HTRDC(img, k):
 def main():
     # Create a VideoCapture object and read from input file
     # If the input is the camera, pass 0 instead of the video file name
-    video_path = "videos/GOPR2048.MP4"
+    video_path = "videos/VIRB0391.MP4"
     # cap = cv2.VideoCapture("videos/VIRB0392.MP4")
     # cap.set(1, 700)
     cap = cv2.VideoCapture(video_path)
@@ -55,7 +51,7 @@ def main():
     retrieve = RetrieveClass()
     rectify = RectifyClass(retrieve)
     face_detection = FaceDetectionClass()
-
+    localize = LocalizeClass()
     # Check the extension of video, MOV files are rotated by -90°
     file_name, file_extension = os.path.splitext(video_path)
 
@@ -77,26 +73,22 @@ def main():
 
             # bb_frame is used for drawing, frame is clean
             bb_frame = frame.copy()
-            detections_list = detect.yolo_detection(bb_frame, draw=True)
+            detections_list = detect.yolo_detection(bb_frame)
+            show_img("Frame with detections", bb_frame)
 
             for detection in detections_list:
                 if detection[0] == 'painting' and not is_roi_outside_frame(
                         frame_width, frame_height, *detection[2:6]):
-
                     left = detection[2]  # x
                     top = detection[3]  # y
                     right = detection[4]  # x + w
                     bottom = detection[5]  # y + h
 
                     painting = frame[int(top):int(bottom),
-                                     int(left):int(right)]
+                               int(left):int(right)]
 
                     print("[INFO] Painting detected")
-
-                    cv2.imshow("frame", bb_frame)
-                    cv2.waitKey(2)
-
-                    #rectify.rectify(painting)
+                    rectify.rectify(painting)
                 if detection[0] == 'painting' and len(detections_list) == 1:
                     # It founds only one painting, the roi can be outside frame
 
@@ -106,7 +98,7 @@ def main():
                     bottom = min(detection[5], frame_width)  # y + h
 
                     painting = frame[int(top):int(bottom),
-                                     int(left):int(right)]
+                               int(left):int(right)]
 
                     print("[INFO] Painting detected")
 
@@ -122,45 +114,37 @@ def main():
                     # TO DO AGGIUSTARE IL ROI
                     print("[INFO] Person detected")
 
-                    person_roi = frame[int(top * 0.75):int(bottom), left:right]
+                    person_roi = frame[int(top * 1.3):int(bottom), left:right]
 
                     if not face_detection.is_facing_camera(person_roi, True):
                         paintings_detections = [
                             element for element in detections_list if element[0] == 'painting']
                         if face_detection.is_facing_paintings(detection, paintings_detections):
-                            cv2.rectangle(
-                                bb_frame, (left, bottom+10), (left+50, bottom+10))
+                            paintings_detections = [element for element in detections_list if element[0] == 'painting']
+                            for painting in paintings_detections:
+                                left_p = painting[2]
+                                right_p = painting[4]
+                                top_p = painting[3]
+                                bottom_p = painting[5]
+                                if not is_roi_outside_frame(frame_width, frame_height, *painting[2:6]):
+                                    painting_roi = frame[int(top_p):int(bottom_p), int(left_p):int(right_p)]
+                                    try:
+                                        ranked_list, dst_points, src_points = retrieve.retrieve(painting_roi)
+                                        localize.localize(ranked_list)
+                                    except TypeError:
+                                        print("[ERROR] Can't localize the person")
 
-                    txt_color = (255, 255, 255)
-                    label = "The person is facing a painting"
-                    label_size, base_line = cv2.getTextSize(
-                        label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-                    bottom = min(bottom, label_size[1])
-                    cv2.rectangle(bb_frame, (left, bottom - round(1.5 * label_size[1])),
-                                  (left + round(1.5 * label_size[0]), bottom + base_line), color=(0, 0, 0), thickness=cv2.FILLED)
-                    cv2.putText(bb_frame, label, (left, bottom), cv2.FONT_HERSHEY_SIMPLEX,
-                                0.75, color=txt_color, thickness=2)
-
-                    # TO DO gestire quando è rivolto a paintings
+                    cv2.rectangle(
+                        bb_frame, (left, bottom + 10), (left + 50, bottom + 10), (255, 255, 255))
 
                 elif detection[0] == 'statue':
-                    # TO DO
-                    pass
-                else:
-                    print("[INFO] Nothing detected")
-                    pass
-
-            # Press Q on keyboard to  exit
-            if cv2.waitKey(25) & 0xFF == ord("q"):
-                break
-
+                    print("[INFO] Statue detected")
         # Break the loop
         else:
             break
 
     # When everything done, release the video capture and writer objects
     cap.release()
-    # out.release()
 
     # Closes all the frames
     cv2.destroyAllWindows()

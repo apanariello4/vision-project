@@ -3,13 +3,10 @@ import numpy as np
 
 
 def erosion_dilation(img):
-    img = cv2.erode(img, np.ones((3, 3), dtype=np.uint8))
-    img = cv2.dilate(img, np.ones(
-        (4, 4), dtype=np.uint8), iterations=1)
-    # img = cv2.erode(img, np.ones(
-    #    (3, 3), dtype=np.uint8), iterations=1)
-
-    return img
+    kernel = np.ones((5, 5), np.uint8)
+    img_erosion = cv2.erode(img, kernel, iterations=1)
+    dilation = cv2.dilate(img_erosion, kernel, iterations=1)
+    return dilation
 
 
 def resize_to_ratio(img, ratio):
@@ -69,7 +66,6 @@ def crop_image(img, coordinates):
     """
     x, y, w, h = coordinates
     crop_img = img[y:y + h, x:x + w]
-    cv2.imshow("crop", crop_img)
     return crop_img
 
 
@@ -93,7 +89,7 @@ def is_roi_outside_frame(frame_width, frame_height, left, top, right, bottom) ->
     """
 
     if left <= 0 or top <= 0 or right >= frame_width or bottom >= frame_height:
-        print("[ERROR] Roi outside frame")
+        print("[ERROR] ROI outside frame. Skipping this detection")
         return True
     return False
 
@@ -136,3 +132,14 @@ def remove_points_outside_roi(src_points: list, frame_width: int, frame_height: 
 
     return [coordinates for coordinates in src_points if (coordinates[0]
                                                           < frame_width) and (coordinates[1] < frame_height)]
+
+
+def show_img(window_name, img):
+    """
+    If there is a matched image, the function shows it on screen
+        :param img: image to show on screen
+    """
+    cv2.namedWindow(window_name, cv2.WINDOW_KEEPRATIO)
+    cv2.imshow(window_name, img)
+    cv2.resizeWindow(window_name, int(img.shape[1] / 2), int(img.shape[0] / 2))
+    cv2.waitKey(2)

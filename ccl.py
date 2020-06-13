@@ -7,8 +7,8 @@ import random
 
 def draw_components(labels):
     # Map component labels to hue val
-    label_hue = np.uint8(179*labels/np.max(labels))
-    blank_ch = 255*np.ones_like(label_hue)
+    label_hue = np.uint8(179 * labels / np.max(labels))
+    blank_ch = 255 * np.ones_like(label_hue)
     labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
 
     # cvt to BGR for display
@@ -20,7 +20,7 @@ def draw_components(labels):
     return labeled_img
 
 
-def image_segmentation(img):
+def image_segmentation_with_stats(img):
     """
     """
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -46,7 +46,7 @@ def get_rois(img, gray_img):
         gray_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
     for cnt in contours:
         x, y, w, h = cv2.boundingRect(cnt)
-        ROI = img[y:y+h, x:x+w]
+        ROI = img[y:y + h, x:x + w]
         cv2.imshow('ROI', ROI)
 
 
@@ -67,6 +67,25 @@ def convex_hull(img):
     for i in range(len(contours)):
         color = (random.randint(0, 256), random.randint(
             0, 256), random.randint(0, 256))
-       # cv2.drawContours(drawing, contours, i, color)
+        # cv2.drawContours(drawing, contours, i, color)
         cv2.drawContours(drawing, hull_list, i, color)
     return drawing
+
+
+def image_segmentation(img):
+    kernel = np.ones((5, 5), np.uint8)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 13,
+                                   3)  # 11,2 at the beginning
+    # cv2.imshow("thresh", thresh)
+    medianBlur = cv2.medianBlur(thresh, 3)
+    # cv2.imshow("medianBlur", medianBlur)
+    post_proc = erosion_dilation(medianBlur)
+    # cv2.imshow("post_proc", post_proc)
+
+    num_labels, labels_im = cv2.connectedComponentsWithAlgorithm(post_proc, connectivity=8, ltype=cv2.CV_32S,
+                                                                 ccltype=cv2.CCL_GRANA)
+    labeled_image = draw_components(labels_im)
+    # cv2.imshow("CCL", labeled_image)
+
+    return labeled_image

@@ -1,5 +1,5 @@
 import sys
-#import imutils
+# import imutils
 
 import numpy as np
 from cv2 import cv2
@@ -50,8 +50,8 @@ def hough_contours(img):
     """
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     edges = auto_canny(gray)
-    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 100, np.array([]), 50, 5)
-    cv2.imshow("CANNY",edges)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, np.array([]), 50, 5)
+    cv2.imshow("CANNY", edges)
     cv2.waitKey()
 
     for line in lines:
@@ -172,7 +172,6 @@ def dram_multiple_contours(img, contours, max_contours=10, approximate=False):
     overlap_area = np.zeros((max_contours, 4))
     for i in range(max_contours):
         x, y, w, h = cv2.boundingRect(c[i])
-        crop_image(img, (x, y, w, h))
 
         entropy_computed = (entropy(histogram(
             crop_image(image_entropy, (x, y, w, h)))))
@@ -180,9 +179,36 @@ def dram_multiple_contours(img, contours, max_contours=10, approximate=False):
 
         if entropy_computed > 7:
             if not overlap(overlap_area, (x, y, w, h), i):
-
                 print(overlap(overlap_area, (x, y, w, h), i))
                 cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
                 print(x, y, w, h)
                 overlap_area[i, :] = x, y, w, h
+
+
+def get_painting_from_roi(self, cntrs, img):
+    """
+    It takes the contours of a painting and returns the painting extracted from the given image
+        :param cntrs: contours of the image
+        :param img: image containing paintings
+        :return: painting extracted from the image
+    """
+    # find the biggest countour (c) by the area
+    c = max(cntrs, key=cv2.contourArea)
+
+    rc = cv2.minAreaRect(c)
+    box = cv2.boxPoints(rc)
+    for p in box:
+        pt = (p[0], p[1])
+        # print(pt)
+        # cv2.circle(frame, pt, 5, (200, 0, 0), 2)
+
+    # approximate the contour (approx) with 10% tolerance
+    epsilon = 0.1 * cv2.arcLength(c, True)
+    approx = cv2.approxPolyDP(c, epsilon, True)
+    x, y, w, h = cv2.boundingRect(approx)
+
+    # draw the biggest contour (c) in green
+    # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    extracted_painting = img[y: y + h, x: x + w]
+    return extracted_painting
