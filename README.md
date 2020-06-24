@@ -1,5 +1,10 @@
 # Vision and Cognitive Systems Project 
 ## Università degli Studi di Modena e Reggio Emilia A.A. 2019/2020
+---
+## Introduction
+
+The aim of this work is to detect paintings and people inside a museum environment and then perform retrieval and rectification of the detected painting from a database of high quality images, we also detect statues. The detection of the three objects is performed with a custom trained YOLOv3 network, while the retrieval is done by ORB keypoints. For the rectification we exploit the keypoints obtained by the ORB to find the homography matrix. Once we have found the paintings and the people we can localize the latter by getting the localization of the painting. The direction in which the person is facing is computed by a face detection and assuming that if the person is not looking at the camera then he is facing a painting.
+We also process screenshots from a 3D model of the museum, replacing paintings with high quality images from a database, using an inverse approach w.r.t the rectification one.
 
 # Features
 - [x] **Painting detection:** predict a ROI for each painting
