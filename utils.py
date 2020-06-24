@@ -1,5 +1,6 @@
 from cv2 import cv2
 import numpy as np
+from scipy.spatial import distance as dist
 
 
 def erosion_dilation(img):
@@ -106,13 +107,36 @@ def order_corners(corners: list) -> list:
     idx = np.argsort(a).astype(np.int32)
     corners = corners[idx, :]
     # [(0, 0), (x, 0), (0, y), (x, y)]
-    if corners.shape[0] == 4:
-        upper_right = corners[1]
-        lower_left = corners[2]
 
-        if upper_right[0] < lower_left[0]:
-            # swaps the two coordinates
-            corners[1], corners[2] = corners[2], corners[1]
+    # if corners.shape[0] == 4:
+    #     upper_right = corners[1]
+    #     lower_left = corners[2]
+
+    #     if upper_right[0] < lower_left[0]:
+    #         # swaps the two coordinates
+    #         corners[1], corners[2] = corners[2], corners[1]
+
+    # sort the points based on their x-coordinates
+    xSorted = corners[np.argsort(corners[:, 0]), :]
+    # grab the left-most and right-most points from the sorted
+    # x-roodinate points
+    leftMost = xSorted[:2, :]
+    rightMost = xSorted[2:, :]
+    # now, sort the left-most coordinates according to their
+    # y-coordinates so we can grab the top-left and bottom-left
+    # points, respectively
+    leftMost = leftMost[np.argsort(leftMost[:, 1]), :]
+    (tl, bl) = leftMost
+    # now that we have the top-left coordinate, use it as an
+    # anchor to calculate the Euclidean distance between the
+    # top-left and right-most points; by the Pythagorean
+    # theorem, the point with the largest distance will be
+    # our bottom-right point
+    D = dist.cdist(tl[np.newaxis], rightMost, "euclidean")[0]
+    (br, tr) = rightMost[np.argsort(D)[::-1], :]
+    # return the coordinates in top-left, top-right,
+    # bottom-right, and bottom-left order
+    corners = np.array([tl, tr, bl, br], dtype="float32")
 
     return corners
 
