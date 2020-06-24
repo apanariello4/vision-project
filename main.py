@@ -32,10 +32,11 @@ def compute_HTRDC(img, k):
 def main():
     # Create a VideoCapture object and read from input file
     # If the input is the camera, pass 0 instead of the video file name
-    video_path = "videos/VIRB0391.MP4"
+    video_path = "videos/VIRB0407.MP4"
     # cap = cv2.VideoCapture("videos/VIRB0392.MP4")
     # cap.set(1, 700)
     cap = cv2.VideoCapture(video_path)
+    cap.set(1, 300)
 
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
@@ -68,13 +69,13 @@ def main():
             frame_number += 1
             print(f'############  FRAME N° {frame_number}  ############')
 
-            if file_extension.upper() == "MOV":
+            if file_extension.upper() == ".MOV":
                 frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
 
             # bb_frame is used for drawing, frame is clean
             bb_frame = frame.copy()
             detections_list = detect.yolo_detection(bb_frame)
-            show_img("Frame with detections", bb_frame)
+            # show_img("Frame with detections", bb_frame)
 
             for detection in detections_list:
                 if detection[0] == 'painting' and not is_roi_outside_frame(
@@ -85,7 +86,7 @@ def main():
                     bottom = detection[5]  # y + h
 
                     painting = frame[int(top):int(bottom),
-                               int(left):int(right)]
+                                     int(left):int(right)]
 
                     print("[INFO] Painting detected")
                     rectify.rectify(painting)
@@ -98,7 +99,7 @@ def main():
                     bottom = min(detection[5], frame_width)  # y + h
 
                     painting = frame[int(top):int(bottom),
-                               int(left):int(right)]
+                                     int(left):int(right)]
 
                     print("[INFO] Painting detected")
 
@@ -120,19 +121,23 @@ def main():
                         paintings_detections = [
                             element for element in detections_list if element[0] == 'painting']
                         if face_detection.is_facing_paintings(detection, paintings_detections):
-                            paintings_detections = [element for element in detections_list if element[0] == 'painting']
+                            paintings_detections = [
+                                element for element in detections_list if element[0] == 'painting']
                             for painting in paintings_detections:
                                 left_p = painting[2]
                                 right_p = painting[4]
                                 top_p = painting[3]
                                 bottom_p = painting[5]
                                 if not is_roi_outside_frame(frame_width, frame_height, *painting[2:6]):
-                                    painting_roi = frame[int(top_p):int(bottom_p), int(left_p):int(right_p)]
+                                    painting_roi = frame[int(top_p):int(
+                                        bottom_p), int(left_p):int(right_p)]
                                     try:
-                                        ranked_list, dst_points, src_points = retrieve.retrieve(painting_roi)
+                                        ranked_list, dst_points, src_points = retrieve.retrieve(
+                                            painting_roi)
                                         localize.localize(ranked_list)
                                     except TypeError:
-                                        print("[ERROR] Can't localize the person")
+                                        print(
+                                            "[ERROR] Can't localize the person")
 
                     cv2.rectangle(
                         bb_frame, (left, bottom + 10), (left + 50, bottom + 10), (255, 255, 255))
